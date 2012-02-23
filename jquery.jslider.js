@@ -76,7 +76,7 @@
                                         _transition(currentFrame - 1);
                                     }
                                 })
-                                .text(settings.controlPrevText);
+                                .html(settings.controlPrevText);
                                 
                     $next = $('<a />')
                                 .addClass('slider-control next')
@@ -87,7 +87,7 @@
                                         _transition(currentFrame + 1);
                                     }
                                 })
-                                .text(settings.controlNextText);
+                                .html(settings.controlNextText);
                                     
                     $prev.add($next)
                         .attr('unselectable', 'on')
@@ -230,7 +230,7 @@
                 // set the frame height/width
                 // set the container height/width
 
-                if (settings.transition === 'slide') {
+                if (settings.transition === 'slide' || settings.transition === 'slide-inverse') {
                     $container.css({
                         'width': boundaryWidth * frameCount,
                         'height': boundaryHeight
@@ -252,24 +252,20 @@
                 
                 // LOOPING
                 // If out of bounds, send to the opposite side
-                if(settings.looping == 'finite') {
+                if(settings.looping) {
                     if(toFrame > frameCount) {
                         _transition(1);
 
                         return;
-                    } else if(toFrame <= 0) {
+                    } else if (toFrame <= 0) {
                         _transition(frameCount);
                         return;
                     }
 
-                else if(settings.looping == 'inifinite') {
-                    console.log('Hardcore infinite looping mode enabled.');
-                }
-                    
-                // NON-LOOPING
-                // If out of bounds, do nothing
                 } else {
-                    if(toFrame > frameCount || toFrame <= 0) return;
+                    // NON-LOOPING
+                    // If out of bounds, do nothing
+                    if (toFrame > frameCount || toFrame <= 0) return;
                 }
                 
                 switch(settings.transition) {
