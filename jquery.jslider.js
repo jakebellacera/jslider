@@ -65,10 +65,10 @@
                 currentSlide = 1,
                 settings = $.extend({
                     visible: 1,                     // Amount of slides visible at a time.
-                    transition: 'slide',            // Type of transition [slide/slide-inverse/fade].
+                    transition: 'slide',            // Type of transition [slide/fade/cut].
                     direction: 'normal',            // direction of the sliding transition. Will not work if transition != slide.
-                    looping: true,                  // Infinite looping mode.
-                    speed: 800,                     // Animation speed.
+                    looping: true,                  // True: loops back to beginning/end. Infinite: Infinite looping mode.
+                    speed: 800,                     // Animation speed. If transition == 'cut', this is ignored.
                     easing: 'swing',                // jQuery.easing.
                     buttons: true,                  // Enable prev/next buttons.
                     nextText: 'Next Slide',         // Text for next button. HTML is allowed.
@@ -124,7 +124,7 @@
                 $frames = $container.children();
 
                 // How many slides will we be transitioning.
-                if (settings.looping === 'infinite') {
+                if (settings.looping === 'infinite' && settings.transition === 'slide') {
                     // remove excess padding frames
                     slides = Math.ceil(($frames.length - 2) / visibleFrames);
                 } else {
@@ -136,7 +136,7 @@
                 // Some styling for the individual frames
                 if (settings.transition == 'slide') {
                     $frames.css('float', 'left');
-                } else if (settings.transition == 'slide-inverse') {
+                } else if (settings.transition == 'slide' && settings.direction == 'inverse') {
                     $frames.css('float', 'right');
                 }
 
@@ -164,7 +164,7 @@
 
                 _calculateFrameSize();
 
-                if (settings.looping === 'infinite') {
+                if (settings.looping == 'infinite' && settings.transition == 'slide') {
                     // Since we're adding a padding frame, we need to shift forward one.
                     $container.css('margin-left', -boundaryWidth);
                 }
@@ -240,12 +240,14 @@
                         height: frameHeight
                     })
                 });
+
+                window.frames = $frames;
             },
 
             _gotoSlide = function (toSlide) {
                 // Handles slide navigation
 
-                if(settings.looping !== 'infinite' && settings.looping) {
+                if(settings.looping === true) {
                     if(toSlide > slides) {
                         _gotoSlide(1);
                         return;
@@ -261,6 +263,9 @@
                 switch(settings.transition) {
                     case 'slide':
                         _slide(toSlide, settings.direction);
+                        break;
+                    case 'fade':
+                        _fade(toSlide);
                         break;
                     default:
                         _cut(toSlide);
@@ -325,7 +330,7 @@
 
                 }
 
-                function checkSlide(marginDir) {
+                function checkSlide (marginDir) {
 
                     var dimension = function() {
                         if (marginDir == ('top' || 'bottom')) {
@@ -352,6 +357,33 @@
                     $frames.eq(currentSlide).addClass('active').siblings().removeClass('active');
                 }
                 
+            },
+
+            _fade = function(toSlide) {
+
+                var actualSlide = toSlide - 1;
+                
+                currentSlide = toSlide;
+
+                $frames.eq(actualSlide)
+                    .fadeIn(settings.speed);
+                    
+                $frames.eq(actualSlide - 1)
+                    .fadeOut(settings.speed);
+                
+            },
+
+            _cut = function(toSlide) {
+
+                var actualSlide = toSlide - 1;
+                currentSlide = toSlide;
+                    
+                $frames.eq(actualSlide)
+                    .show();
+                    
+                $frames.eq(actualSlide - 1)
+                    .hide();
+                    
             },
 
             /**

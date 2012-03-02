@@ -9,6 +9,7 @@
 		#slider { padding: 50px 0; }
 		#slider .slider-boundary { width: 100%; height: 408px; }
 		.item img { width: 100%; }
+		.disabled { color: red; }
 	</style>
 </head>
 <body>
@@ -33,8 +34,10 @@
 	<script>
 		$(function() {
 			$('#slider').jslider({
+				transition: 'cut',
 				easing: 'easeInOutExpo',
-				looping: 'infinite'
+				looping: false,
+				auto: false
 			});
 		});
 	</script>
