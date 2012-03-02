@@ -1,3 +1,11 @@
+/*
+ * jSlider - An advanced content slider
+ * ====================================
+ * @version v0.5
+ * @author  (c) Jake Bellacera - http://github.com/jakebellacera
+ */
+
+
 (function(window, $, undefined) {
 
     'use strict';
@@ -7,31 +15,31 @@
 
     $event.special.smartresize = {
         setup: function() {
-          $(this).bind( "resize", $event.special.smartresize.handler );
+            $(this).bind( "resize", $event.special.smartresize.handler );
         },
         teardown: function() {
-          $(this).unbind( "resize", $event.special.smartresize.handler );
+            $(this).unbind( "resize", $event.special.smartresize.handler );
         },
         handler: function( event, execAsap ) {
-          // Save the context
-          var context = this,
-              args = arguments;
+            // Save the context
+            var context = this,
+                args = arguments;
 
-          // set correct event type
-          event.type = "smartresize";
+            // set correct event type
+            event.type = "smartresize";
 
-          if ( resizeTimeout ) { clearTimeout( resizeTimeout ); }
-          resizeTimeout = setTimeout(function() {
-            jQuery.event.handle.apply( context, args );
-          }, execAsap === "execAsap"? 0 : 100 );
+            if ( resizeTimeout ) { clearTimeout( resizeTimeout ); }
+                resizeTimeout = setTimeout(function() {
+                jQuery.event.handle.apply( context, args );
+            }, execAsap === "execAsap"? 0 : 100 );
         }
-      };
+    };
 
-      $.fn.smartresize = function( fn ) {
+    $.fn.smartresize = function( fn ) {
         return fn ? this.bind( "smartresize", fn ) : this.trigger( "smartresize", ["execAsap"] );
-      };
+    };
 
-    $.fn.infinitescroll = function(options, callback) {
+    $.fn.jslider = function(options, callback) {
 
         function repeat(str, n) {
             return new Array(n + 1).join(str);
@@ -72,7 +80,7 @@
                     transition: 'slide',    // type of transition [slide/slide-inverse/fade] 
                     looping: true,          // infinite looping mode
                     speed: 800,
-                    easing: 'easeOutExpo',
+                    easing: 'swing',
                     buttons: true,
                     nextText: 'Next Slide',
                     prevText: 'Previous Slide',

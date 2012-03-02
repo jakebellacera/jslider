@@ -4,7 +4,6 @@ jSlider is a content slider with a bunch of cool options such as looping, delaye
 
 ## Dependencies
 
-* [jQuery smartresize](http://github.com/louisremi/jquery-smartresize) — for recalculating the width on window.resize
 * [jQuery Easing](http://gsgd.co.uk/sandbox/jquery/easing/) — if you'd like easing with your transitions
 
 ## Release Notes
