@@ -1,0 +1,42 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Infinite Scroll Example</title>
+
+	<style type="text/css">
+		* { margin: 0; padding: 0; }
+		#page { width: 100%; margin: 0 auto; }
+		#slider { padding: 50px 0; }
+		#slider .slider-boundary { width: 100%; height: 408px; }
+		.item img { width: 100%; }
+	</style>
+</head>
+<body>
+
+	<div id="page">
+		<div id="slider">
+			<div class="item">
+				<img src="img/slide1.png"/>
+			</div>
+			<div class="item">
+				<img src="img/slide2.png"/>
+			</div>
+			<div class="item">
+				<img src="img/slide3.png"/>
+			</div>
+		</div>
+	</div>
+
+	<script src="js/jquery.js"></script>
+	<script src="js/jquery.easing.js"></script>
+	<script src="../jquery.jslider.js"></script>
+	<script>
+		$(function() {
+			$('#slider').jslider({
+				easing: 'easeInOutExpo',
+				looping: 'infinite'
+			});
+		});
+	</script>
+</body>
+</html>

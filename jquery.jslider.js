@@ -45,18 +45,6 @@
             return new Array(n + 1).join(str);
         }
 
-        /*
-         * Notes
-         * =====
-         * wrapper                  - holds it all
-         *     buttons              - next/prev buttons
-         *     pagination           - shows a slide's pagination
-         *     boundary             - visible window
-         *         container        - contains frames
-         *             slide        - nonexistent, just saved in memory
-         *                 frame    - an individual item
-         */
-
         $(this).each(function(key, val) {
             var $this = $(this),
                 $wrapper,
@@ -76,19 +64,19 @@
                 slides,
                 currentSlide = 1,
                 settings = $.extend({
-                    visible: 1,             // amount of slides visible at a time
-                    transition: 'slide',    // type of transition [slide/slide-inverse/fade] 
-                    looping: true,          // infinite looping mode
-                    speed: 800,
-                    easing: 'swing',
-                    buttons: true,
-                    nextText: 'Next Slide',
-                    prevText: 'Previous Slide',
-                    direction: 'normal',
-                    auto: true,
-                    duration: 5000,
-                    hoverPause: true,
-                    fluid: true
+                    visible: 1,                     // Amount of slides visible at a time.
+                    transition: 'slide',            // Type of transition [slide/slide-inverse/fade].
+                    direction: 'normal',            // direction of the sliding transition. Will not work if transition != slide.
+                    looping: true,                  // Infinite looping mode.
+                    speed: 800,                     // Animation speed.
+                    easing: 'swing',                // jQuery.easing.
+                    buttons: true,                  // Enable prev/next buttons.
+                    nextText: 'Next Slide',         // Text for next button. HTML is allowed.
+                    prevText: 'Previous Slide',     // Text for prev button. HTML is allowed.
+                    auto: true,                     // Determine if the slider transitions automatically.
+                    duration: 5000,                 // Duration each slide shows. Only works if auto: true.
+                    hoverPause: true,               // Hovering over the .boundary pauses the timer. Only works if auto: true.
+                    fluid: false                    // Enable responsive sizing (binds the dimension function to the window.resize).
                 }, options),
 
             _init = function() {
