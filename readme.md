@@ -8,16 +8,24 @@ jSlider is a content slider with a bunch of cool options such as looping, delaye
 
 ## Release Notes
 
+### 0.5
+
+Added:
+
+* Infinite looping
+* Responsive layout mode (Using bundled [smartresize](http://github.com/louisremi/jquery-smartresize))
+* Frame-chunking
+* Fade/cut transitions
+* More bugs!
+
+Changed:
+
+* Re-built from the ground up
+
 ### 0.1
 
 * Initial release. Probably has a few bugs but it works.
 
-## Other Info
-
-### Credit where credit's due
-
-Major thanks to [jstnjns](http://github.com/jstnjns) for his Slider plugin, which provided the foundation for jSlider. jSlider was initially just a fork off of Slider, but it instead started becoming a separate project due to major core changes.
-
-### License
+## License
 
 MIT licensed http://jakebellacera.mit-license.org
