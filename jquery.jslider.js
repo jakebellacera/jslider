@@ -1,5 +1,5 @@
 /*
- * jSlider - An advanced content slider
+ * jslider - An advanced content slider
  * ====================================
  * @version v0.5
  * @author  (c) Jake Bellacera - http://github.com/jakebellacera

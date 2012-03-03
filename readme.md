@@ -1,4 +1,4 @@
-# jSlider - an advanced content slider
+# jslider - an advanced content slider
 
 jSlider is a content slider with a bunch of cool options such as looping, delayed indexing, etc.
 
