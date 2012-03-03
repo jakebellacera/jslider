@@ -6,7 +6,7 @@
  */
 
 
-(function(window, $, undefined) {
+(function (window, $) {
 
     'use strict';
 
@@ -14,13 +14,13 @@
         resizeTimeout;
 
     $event.special.smartresize = {
-        setup: function() {
-            $(this).bind( "resize", $event.special.smartresize.handler );
+        setup: function () {
+            $(this).bind("resize", $event.special.smartresize.handler);
         },
-        teardown: function() {
-            $(this).unbind( "resize", $event.special.smartresize.handler );
+        teardown: function () {
+            $(this).unbind("resize", $event.special.smartresize.handler);
         },
-        handler: function( event, execAsap ) {
+        handler: function (event, execAsap) {
             // Save the context
             var context = this,
                 args = arguments;
@@ -28,24 +28,24 @@
             // set correct event type
             event.type = "smartresize";
 
-            if ( resizeTimeout ) { clearTimeout( resizeTimeout ); }
-                resizeTimeout = setTimeout(function() {
-                jQuery.event.handle.apply( context, args );
-            }, execAsap === "execAsap"? 0 : 100 );
+            if (resizeTimeout) { clearTimeout(resizeTimeout); }
+            resizeTimeout = setTimeout(function () { $.event.handle.apply(context, args); }, execAsap === "execAsap" ? 0 : 100);
         }
     };
 
-    $.fn.smartresize = function( fn ) {
-        return fn ? this.bind( "smartresize", fn ) : this.trigger( "smartresize", ["execAsap"] );
+    $.fn.smartresize = function (fn) {
+        return fn ? this.bind("smartresize", fn) : this.trigger("smartresize", ["execAsap"]);
     };
 
-    $.fn.jslider = function(options, callback) {
+    $.fn.jslider = function (options, callback) {
 
         function repeat(str, n) {
-            return new Array(n + 1).join(str);
+            var derp = [];
+            derp.length = n + 1;
+            return derp.join(str);
         }
 
-        $(this).each(function(key, val) {
+        $(this).each(function (key, val) {
             var $this = $(this),
                 $wrapper,
                 $boundary,
@@ -79,329 +79,338 @@
                     fluid: false                    // Enable responsive sizing (binds the dimension function to the window.resize).
                 }, options),
 
-            _init = function() {
-                //Set how many frames are per slide
-                visibleFrames = Math.ceil(settings.visible);
+                init = function () {
+                    //Set how many frames are per slide
+                    visibleFrames = Math.ceil(settings.visible);
 
-                // Wrapper: contains the entire slider.
-                $wrapper = $this
-                                .addClass('slider-wrapper')
-                                .css('position', 'relative');
+                    // Wrapper: contains the entire slider.
+                    $wrapper = $this
+                                    .addClass('slider-wrapper')
+                                    .css('position', 'relative');
 
-                // Boundary: the visibile viewport.
-                // This element requires width/height set in CSS.
-                // Recommended: set overflow: hidden; in CSS as well to prevent "jump"
-                $boundary = $wrapper.wrapInner('<div/>').children()
-                                .addClass('slider-boundary')
-                                .css('overflow', 'hidden');
+                    // Boundary: the visibile viewport.
+                    // This element requires width/height set in CSS.
+                    // Recommended: set overflow: hidden; in CSS as well to prevent "jump"
+                    $boundary = $wrapper.wrapInner('<div/>').children()
+                                    .addClass('slider-boundary')
+                                    .css('overflow', 'hidden');
 
-                // Container: contains all of the frames
-                $container = $boundary.wrapInner('<div/>').children()
-                                .addClass('slider-container')
-                                .css('overflow', 'hidden');
+                    // Container: contains all of the frames
+                    $container = $boundary.wrapInner('<div/>').children()
+                                    .addClass('slider-container')
+                                    .css('overflow', 'hidden');
 
-                /* Additional formatting to produce the infinite effect. */
-                if(settings.looping === 'infinite' && settings.transition === 'slide') {
+                    /* Additional formatting to produce the infinite effect. */
+                    if (settings.looping === 'infinite' && settings.transition === 'slide') {
 
-                    $frames = $container.children();
+                        $frames = $container.children();
 
-                    // pad slides with empty elements if required
-                    if ($frames.length % visibleFrames != 0) {
-                        // Find the remaining amount of slides required to finish the last slide.
-                        $container.append(repeat('<div class="empty"/>', visibleFrames - ($frames.length % visibleFrames)));
+                        // pad slides with empty elements if required
+                        if ($frames.length % visibleFrames !== 0) {
+                            // Find the remaining amount of slides required to finish the last slide.
+                            $container.append(repeat('<div class="empty"/>', visibleFrames - ($frames.length % visibleFrames)));
+                        }
+
+                        $frames = $container.children();
+
+                        $frames.filter(':first').before(
+                            $frames.slice(-visibleFrames).clone().addClass('cloned')
+                        );
+                        $frames.filter(':last').after(
+                            $frames.slice(0, visibleFrames).clone().addClass('cloned')
+                        );
                     }
 
                     $frames = $container.children();
 
-                    $frames.filter(':first').before(
-                        $frames.slice(-visibleFrames).clone().addClass('cloned')
-                    );
-                    $frames.filter(':last').after(
-                        $frames.slice(0, visibleFrames).clone().addClass('cloned')
-                    );
-                }
+                    // How many slides will we be transitioning.
+                    if (settings.looping === 'infinite' && settings.transition === 'slide') {
+                        // remove excess padding frames
+                        slides = Math.ceil(($frames.length - 2) / visibleFrames);
+                    } else {
+                        slides = Math.ceil($frames.length / visibleFrames);
+                    }
 
-                $frames = $container.children();
+                    $frames.addClass('slider-frame');
 
-                // How many slides will we be transitioning.
-                if (settings.looping === 'infinite' && settings.transition === 'slide') {
-                    // remove excess padding frames
-                    slides = Math.ceil(($frames.length - 2) / visibleFrames);
-                } else {
-                    slides = Math.ceil($frames.length / visibleFrames);
-                }
+                    // Some styling for the individual frames
+                    if (settings.transition === 'slide') {
+                        $frames.css('float', 'left');
+                    } else if (settings.transition === 'slide' && settings.direction === 'inverse') {
+                        $frames.css('float', 'right');
+                    } else {
+                        $frames.css('position', 'relative').slice(currentSlide, slides).css('display', 'none');
+                    }
 
-                $frames.addClass('slider-frame');
-                
-                // Some styling for the individual frames
-                if (settings.transition == 'slide') {
-                    $frames.css('float', 'left');
-                } else if (settings.transition == 'slide' && settings.direction == 'inverse') {
-                    $frames.css('float', 'right');
-                }
+                    /* Append buttons */
+                    if (settings.buttons) {
+                        $prevButton = $('<a class="slider-button slider-prev"/>')
+                                            .html(settings.prevText)
+                                            .on('click', function (e) {
+                                                if (!$(this).hasClass('disabled')) {
+                                                    gotoSlide(currentSlide - 1);
+                                                }
+                                                e.preventDefault();
+                                            })
+                                            .appendTo($wrapper);
+                        $nextButton = $('<a class="slider-button slider-next"/>')
+                                            .html(settings.nextText)
+                                            .on('click', function (e) {
+                                                if (!$(this).hasClass('disabled')) {
+                                                    gotoSlide(currentSlide + 1);
+                                                }
+                                                e.preventDefault();
+                                            })
+                                            .appendTo($wrapper);
+                    }
 
-                /* Append buttons */
-                if (settings.buttons) {
-                    $prevButton = $('<a class="slider-button slider-prev"/>')
-                                        .html(settings.prevText)
-                                        .on('click', function(e) {
-                                            if (!$(this).hasClass('disabled')) {
-                                                _gotoSlide(currentSlide - 1);
-                                            }
-                                            e.preventDefault();
-                                        })
-                                        .appendTo($wrapper);
-                    $nextButton = $('<a class="slider-button slider-next"/>')
-                                        .html(settings.nextText)
-                                        .on('click', function(e) {
-                                            if (!$(this).hasClass('disabled')) {
-                                                _gotoSlide(currentSlide + 1);
-                                            }
-                                            e.preventDefault();
-                                        })
-                                        .appendTo($wrapper);
-                }
+                    calculateFrameSize();
 
-                _calculateFrameSize();
-
-                if (settings.looping == 'infinite' && settings.transition == 'slide') {
-                    // Since we're adding a padding frame, we need to shift forward one.
-                    $container.css('margin-left', -boundaryWidth);
-                }
+                    if (settings.looping === 'infinite' && settings.transition === 'slide') {
+                        // Since we're adding a padding frame, we need to shift forward one.
+                        $container.css('margin-left', -boundaryWidth);
+                    }
 
 
-                /* Start the timer */
-                if(settings.auto) {
-                    _startTimer(settings.duration);
-                    
-                    if(settings.hoverPause) {
-                        $boundary.hover(function() {
-                            _stopTimer();
-                        }, function() {
-                            _startTimer();
+                    /* Start the timer */
+                    if (settings.auto) {
+                        startTimer(settings.duration);
+                        
+                        if (settings.hoverPause) {
+                            $boundary.hover(function () {
+                                stopTimer();
+                            }, function () {
+                                startTimer();
+                            });
+                        }
+                    }
+
+                    // Any additional bindings should be placed here
+
+                    if (settings.fluid) {
+                        $(window).on('smartresize', function () {
+                            calculateFrameSize();
+
+                            // Fix le margins
+                            if (settings.transition === 'slide') {
+                                var dir = function () {
+                                        var value;
+                                        if (settings.transition === 'vertical') {
+                                            value = 'top';
+                                        } else if (settings.transition === 'slide-inverse') {
+                                            value = 'right';
+                                        } else {
+                                            value = 'left';
+                                        }
+
+                                        return value;
+                                    },
+                                    amount = function () {
+                                        var value;
+                                        if (settings.looping === 'infinite') {
+                                            value = boundaryWidth*currentSlide + 1;
+                                        } else {
+                                            value = boundaryWidth*currentSlide;
+                                        }
+
+                                        return value;
+                                    };
+                                $container.css('margin-' + dir(), -amount());
+                            }
                         });
                     }
-                }
 
-                // Any additional bindings should be placed here
+                },
 
-                if (settings.fluid) {
-                    $(window).on('smartresize', function() {
-                        _calculateFrameSize();
+                calculateFrameSize = function () {
+                    var width = $boundary.innerWidth(),
+                        height = $boundary.innerHeight();
+                    boundaryWidth = width;
+                    boundaryHeight = height;
+                    frameWidth = width / visibleFrames;
+                    frameHeight = height;
 
-                        // Fix le margins
-                        if ( settings.transition === 'slide' ) {
-                            var dir = function () {
-                                    if ( settings.transition === 'vertical' ) {
-                                        return 'top';
-                                    } else if ( settings.transition === 'slide-inverse' ) {
-                                        return 'right';
-                                    } else {
-                                        return 'left';
-                                    }
-                                },
-                                amount = function () {
-                                    if( settings.looping === 'infinite') {
-                                        return boundaryWidth*currentSlide + 1;
-                                    } else {
-                                        return boundaryWidth*currentSlide;
-                                    }
-                                };
-                            $container.css('margin-' + dir(), -amount())
-                        }
-                    });
-                }
-
-            },
-
-            _calculateFrameSize = function () {
-                var width = $boundary.innerWidth(),
-                    height = $boundary.innerHeight();
-                boundaryWidth = width;
-                boundaryHeight = height;
-                frameWidth = width / visibleFrames;
-                frameHeight = height;
-
-                // Calculate container size
-                $container.css({
-                    width: function () {
-                            if(settings.transition === 'slide') {
-                                return $frames.length * width;
+                    // Calculate container size
+                    $container.css({
+                        width: function () {
+                            var value;
+                            if (settings.transition === 'slide') {
+                                value = $frames.length * width;
                             } else {
-                                return $frames.length * width;
+                                value = $frames.length * width;
                             }
+
+                            return value;
                         },
-                    height: frameHeight
-                });
-
-                $frames.each(function() {
-                    $(this).css({
-                        width: frameWidth,
                         height: frameHeight
-                    })
-                });
-
-                window.frames = $frames;
-            },
-
-            _gotoSlide = function (toSlide) {
-                // Handles slide navigation
-
-                if(settings.looping === true) {
-                    if(toSlide > slides) {
-                        _gotoSlide(1);
-                        return;
-                    } else if (toSlide <= 0) {
-                        _gotoSlide(slides);
-                        return;
-                    }
-                } else if(!settings.looping) {
-                    if (toSlide > slides || toSlide <= 0) return;
-                }
-
-                // Perform the animation
-                switch(settings.transition) {
-                    case 'slide':
-                        _slide(toSlide, settings.direction);
-                        break;
-                    case 'fade':
-                        _fade(toSlide);
-                        break;
-                    default:
-                        _cut(toSlide);
-                        break;
-                };
-
-
-                if(!settings.looping && settings.buttons) {
-                    // Sets 'previous' button to disabled if on first frame
-                    if(currentSlide === 1) {
-                        $prevButton.addClass('disabled');
-                    } else {
-                        $prevButton.removeClass('disabled');
-                    }
-                        
-                    // Sets 'next' button to disabled if on last frame
-                    if(currentSlide === slides) {
-                        $nextButton.addClass('disabled');
-                    } else {
-                        $nextButton.removeClass('disabled');
-                    }
-                }
-            },
-
-            /**
-             * Transitions
-             */
-
-            // Slide - slides through the frames
-            _slide = function (toSlide, direction) {
-
-                var dir = toSlide < currentSlide ? -1 : 1,
-                    n = toSlide,
-                    position = frameWidth * visibleFrames * n;
-                
-                if(direction == 'inverse') {
-                    
-                    // Inversed slide transition ()
-                    $container.filter(':not(:animated)').animate({
-                        'margin-right': -position
-                    }, settings.speed, settings.easing, function() {
-                        checkSlide('right')
                     });
 
-                } else if(direction == 'vertical') {
-                    
-                    // Vertical slide transition (ttb)
-                    $container.filter(':not(:animated)').animate({
-                        marginTop: -position
-                    }, settings.speed, settings.easing, function() {
-                        checkSlide('top')
+                    $frames.each(function () {
+                        $(this).css({
+                            width: frameWidth,
+                            height: frameHeight
+                        });
                     });
 
-                } else {
+                    window.frames = $frames;
+                },
 
-                    // Basic slide transition (ltr)
-                    $container.filter(':not(:animated)').animate({
-                        'margin-left': -position
-                    }, settings.speed, settings.easing, function() {
-                        checkSlide('left')
-                    });
+                gotoSlide = function (toSlide) {
+                    // Handles slide navigation
 
-                }
-
-                function checkSlide (marginDir) {
-
-                    var dimension = function() {
-                        if (marginDir == ('top' || 'bottom')) {
-                            return boundaryHeight;
-                        } else {
-                            return boundaryWidth;
+                    if (settings.looping === true) {
+                        if (toSlide > slides) {
+                            gotoSlide(1);
+                        } else if (toSlide <= 0) {
+                            gotoSlide(slides);
                         }
-                    };
+                        return;
+                    } else if (!settings.looping) {
+                        if (toSlide > slides || toSlide <= 0) { return; }
+                    }
+
+                    // Perform the animation
+                    switch(settings.transition) {
+                        case 'slide':
+                            slide(toSlide, settings.direction);
+                            break;
+                        case 'fade':
+                            fade(toSlide);
+                            break;
+                        default:
+                            cut(toSlide);
+                            break;
+                    }
+
+
+                    if (!settings.looping && settings.buttons) {
+                        // Sets 'previous' button to disabled if on first frame
+                        if (currentSlide === 1) {
+                            $prevButton.addClass('disabled');
+                        } else {
+                            $prevButton.removeClass('disabled');
+                        }
+                            
+                        // Sets 'next' button to disabled if on last frame
+                        if (currentSlide === slides) {
+                            $nextButton.addClass('disabled');
+                        } else {
+                            $nextButton.removeClass('disabled');
+                        }
+                    }
+                },
+
+                /**
+                 * Transitions
+                 */
+
+                // Slide - slides through the frames
+                slide = function (toSlide, direction) {
+
+                    var dir = toSlide < currentSlide ? -1 : 1,
+                        n = toSlide,
+                        position = frameWidth * visibleFrames * n;
+                    
+                    if (direction === 'inverse') {
+                        
+                        // Inversed slide transition ()
+                        $container.filter(':not(:animated)').animate({
+                            'margin-right': -position
+                        }, settings.speed, settings.easing, function () {
+                            checkSlide('right');
+                        });
+
+                    } else if (direction === 'vertical') {
+                        
+                        // Vertical slide transition (ttb)
+                        $container.filter(':not(:animated)').animate({
+                            marginTop: -position
+                        }, settings.speed, settings.easing, function () {
+                            checkSlide('top');
+                        });
+
+                    } else {
+
+                        // Basic slide transition (ltr)
+                        $container.filter(':not(:animated)').animate({
+                            'margin-left': -position
+                        }, settings.speed, settings.easing, function () {
+                            checkSlide('left');
+                        });
+
+                    }
+
+                    function checkSlide (marginDir) {
+
+                        var dimension = function () {
+                            var value;
+                            if (marginDir === 'top' || marginDir === 'bottom') {
+                                value = boundaryHeight;
+                            } else {
+                                value = boundaryWidth;
+                            }
+
+                            return value;
+                        };
+
+                        currentSlide = toSlide;
+
+                        if (toSlide > slides) {
+
+                            currentSlide = 1;
+                            $container.css('margin-' + marginDir, -dimension());
+
+                        } else if (settings.looping === 'infinite' && toSlide === 0) {
+
+                            currentSlide = slides;
+                            $container.css('margin-' + marginDir, -dimension() * (slides));
+
+                        }
+
+                        $frames.eq(currentSlide).addClass('active').siblings().removeClass('active');
+                    }
+                    
+                },
+
+                fade = function (toSlide) {
+
+                    var dir = toSlide < currentSlide ? -1 : 1,
+                        actualSlide = toSlide - 1;
+
+                    $frames.eq(actualSlide).show(0, function () {
+                        $frames.eq(currentSlide - 1).fadeOut(settings.speed);
+                    });
+                    $frames.eq(actualSlide).css('z-index', 2).addClass('active').siblings().removeClass('active').css('z-index', 1);
 
                     currentSlide = toSlide;
+                    
+                },
 
-                    if (toSlide > slides) {
+                cut = function (toSlide) {
 
-                        currentSlide = 1;
-                        $container.css('margin-' + marginDir, -dimension());
+                    var actualSlide = toSlide - 1;
+                    currentSlide = toSlide;
+                        
+                    $frames.eq(actualSlide).show().addClass('active').siblings().hide().removeClass('active');
+                        
+                },
 
-                    } else if (settings.looping === 'infinite' && toSlide == 0) {
-
-                        currentSlide = slides;
-                        $container.css('margin-' + marginDir, -dimension() * (slides));
-
+                /**
+                 * Timers
+                 */
+                startTimer = function () {
+                    auto = setInterval(function () {
+                        gotoSlide(currentSlide + 1);
+                    }, settings.duration);
+                },
+                
+                stopTimer = function () {
+                    if (settings.auto !== false){
+                        clearInterval(auto);
                     }
+                };
 
-                    $frames.eq(currentSlide).addClass('active').siblings().removeClass('active');
-                }
-                
-            },
-
-            _fade = function(toSlide) {
-
-                var actualSlide = toSlide - 1;
-                
-                currentSlide = toSlide;
-
-                $frames.eq(actualSlide)
-                    .fadeIn(settings.speed);
-                    
-                $frames.eq(actualSlide - 1)
-                    .fadeOut(settings.speed);
-                
-            },
-
-            _cut = function(toSlide) {
-
-                var actualSlide = toSlide - 1;
-                currentSlide = toSlide;
-                    
-                $frames.eq(actualSlide)
-                    .show();
-                    
-                $frames.eq(actualSlide - 1)
-                    .hide();
-                    
-            },
-
-            /**
-             * Timers
-             */
-            _startTimer = function() {
-                auto = setInterval(function() {
-                    _gotoSlide(currentSlide + 1);
-                }, settings.duration);
-            },
-            
-            _stopTimer = function() {
-                if(settings.auto !== false){
-                    clearInterval(auto);
-                }
-            };
-
-            _init();
+            init();
         });
-    }
-})(window, jQuery);
+    };
+}(window, jQuery));
