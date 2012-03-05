@@ -139,7 +139,8 @@
                     } else if (settings.transition === 'slide' && settings.direction === 'inverse') {
                         $frames.css('float', 'right');
                     } else {
-                        $frames.css('position', 'relative').slice(currentSlide, slides).css('display', 'none');
+                        $container.css('position', 'relative');
+                        $frames.css('position', 'absolute').slice(currentSlide, slides).css('display', 'none');
                     }
 
                     /* Append buttons */
@@ -261,10 +262,11 @@
                     if (settings.looping === true) {
                         if (toSlide > slides) {
                             gotoSlide(1);
+                            return;
                         } else if (toSlide <= 0) {
                             gotoSlide(slides);
+                            return;
                         }
-                        return;
                     } else if (!settings.looping) {
                         if (toSlide > slides || toSlide <= 0) { return; }
                     }
@@ -373,17 +375,16 @@
                 },
 
                 fade = function (toSlide) {
+                    // Hide all the frames, show the current slide, fade in the next slide.
+                    var actualSlide = toSlide - 1,
+                        otherSlide = currentSlide - 1;
 
-                    var dir = toSlide < currentSlide ? -1 : 1,
-                        actualSlide = toSlide - 1;
-
-                    $frames.eq(actualSlide).show(0, function () {
-                        $frames.eq(currentSlide - 1).fadeOut(settings.speed);
+                    $frames.removeClass('active').hide().css('z-index', 1);
+                    $frames.eq(otherSlide).show(0, function() {
+                        $frames.eq(actualSlide).css('z-index', 2).addClass('active').fadeIn(settings.speed);
                     });
-                    $frames.eq(actualSlide).css('z-index', 2).addClass('active').siblings().removeClass('active').css('z-index', 1);
 
                     currentSlide = toSlide;
-                    
                 },
 
                 cut = function (toSlide) {
