@@ -2,6 +2,7 @@
  * jslider - An advanced content slider
  * ====================================
  * @version v0.5
+ * @url     http://github.com/jakebellacera/jslider
  * @author  (c) Jake Bellacera - http://github.com/jakebellacera
  */
 
@@ -259,7 +260,7 @@
                 gotoSlide = function (toSlide) {
                     // Handles slide navigation
 
-                    if (settings.looping === true) {
+                    if (settings.looping === true || settings.looping && settings.transition !== 'slide') {
                         if (toSlide > slides) {
                             gotoSlide(1);
                             return;

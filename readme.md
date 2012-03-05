@@ -4,7 +4,34 @@ jSlider is a content slider with a bunch of cool options such as looping, delaye
 
 ## Dependencies
 
-* [jQuery Easing](http://gsgd.co.uk/sandbox/jquery/easing/) — if you'd like easing with your transitions
+* [jQuery](http://jquery.com)
+* [jQuery Easing](http://gsgd.co.uk/sandbox/jquery/easing/) — **OPTIONAL** - if you'd like easing with your transitions
+
+## Installation
+
+Include jQuery, any optional dependencies and then jslider. Afterwards, paste in this code and change any options to suit your needs:
+
+```javascript
+$('#slideshow').jslider({
+	visible: 1,                     // Amount of slides visible at a time.
+    transition: 'slide',            // Type of transition [slide/fade/cut].
+    direction: 'normal',            // direction of the sliding transition. Will not work if transition != slide.
+    looping: true,                  // True: loops back to beginning/end. Infinite: Infinite looping mode.
+    speed: 800,                     // Animation speed. If transition == 'cut', this is ignored.
+    easing: 'swing',                // jQuery.easing.
+    buttons: true,                  // Enable prev/next buttons.
+    nextText: 'Next Slide',         // Text for next button. HTML is allowed.
+    prevText: 'Previous Slide',     // Text for prev button. HTML is allowed.
+    auto: true,                     // Determine if the slider transitions automatically.
+    duration: 5000,                 // Duration each slide shows. Only works if auto: true.
+    hoverPause: true,               // Hovering over the .boundary pauses the timer. Only works if auto: true.
+    fluid: false                    // Enable responsive sizing (binds the dimension function to the window.resize).
+});
+```
+
+### Looping
+
+By default, jslider loops your slides. If you'd like an infinite loop effect (the last frame will seamlessly slide in the first frame), you must make sure that you have your `transition: 'slide'` before you set `looping: 'infinite'`. If you'd like to disable this feature, simply set `looping: false`
 
 ## Release Notes
 
@@ -26,6 +53,10 @@ Changed:
 
 * Initial release. Probably has a few bugs but it works.
 
+## Found a bug?
+
+If you find any issues or want to contribute, please report them in [jslider's issues](http://github.com/jakebellacera/jslider/issues). jslider is under active development, and pull requests are always welcome!
+
 ## License
 
-MIT licensed http://jakebellacera.mit-license.org
+Please fork and enjoy. MIT licensed: http://jakebellacera.mit-license.org
