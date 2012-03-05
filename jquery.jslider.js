@@ -66,7 +66,7 @@
                 currentSlide = 1,
                 settings = $.extend({
                     visible: 1,                     // Amount of slides visible at a time.
-                    transition: 'slide',            // Type of transition [slide/fade/cut].
+                    transition: 'slide',            // Type of transition [slide/crossfade/fade/cut].
                     direction: 'normal',            // direction of the sliding transition. Will not work if transition != slide.
                     looping: true,                  // True: loops back to beginning/end. Infinite: Infinite looping mode.
                     speed: 800,                     // Animation speed. If transition == 'cut', this is ignored.
@@ -277,6 +277,9 @@
                         case 'slide':
                             slide(toSlide, settings.direction);
                             break;
+                        case 'crossfade':
+                            fade(toSlide, true);
+                            break;
                         case 'fade':
                             fade(toSlide);
                             break;
@@ -375,15 +378,20 @@
                     
                 },
 
-                fade = function (toSlide) {
+                fade = function (toSlide, crossfade) {
                     // Hide all the frames, show the current slide, fade in the next slide.
                     var actualSlide = toSlide - 1,
                         otherSlide = currentSlide - 1;
 
-                    $frames.removeClass('active').hide().css('z-index', 1);
-                    $frames.eq(otherSlide).show(0, function() {
-                        $frames.eq(actualSlide).css('z-index', 2).addClass('active').fadeIn(settings.speed);
-                    });
+                    if (crossfade) {
+                        $frames.removeClass('active').hide().css('z-index', 1);
+                        $frames.eq(otherSlide).show(0, function() {
+                            $frames.eq(actualSlide).css('z-index', 2).addClass('active').fadeIn(settings.speed);
+                        });
+                    } else {
+                        $frames.eq(otherSlide).fadeOut(settings.speed);
+                        $frames.eq(actualSlide).fadeIn(settings.speed);
+                    }
 
                     currentSlide = toSlide;
                 },

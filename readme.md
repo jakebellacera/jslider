@@ -14,7 +14,7 @@ Include jQuery, any optional dependencies and then jslider. Afterwards, paste in
 ```javascript
 $('#slideshow').jslider({
 	visible: 1,                     // Amount of slides visible at a time.
-    transition: 'slide',            // Type of transition [slide/fade/cut].
+    transition: 'slide',            // Type of transition [slide/crossfade/fade/cut].
     direction: 'normal',            // direction of the sliding transition. Will not work if transition != slide.
     looping: true,                  // True: loops back to beginning/end. Infinite: Infinite looping mode.
     speed: 800,                     // Animation speed. If transition == 'cut', this is ignored.
@@ -56,6 +56,10 @@ Changed:
 ## Found a bug?
 
 If you find any issues or want to contribute, please report them in [jslider's issues](http://github.com/jakebellacera/jslider/issues). jslider is under active development, and pull requests are always welcome!
+
+### Contributing
+
+Please note that all pull requests including the minified version of the script will be scrapped and re-minified.
 
 ## License
 
