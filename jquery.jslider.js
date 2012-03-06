@@ -385,7 +385,7 @@
 
                         }
 
-                        $frames.eq(currentSlide).addClass('active').siblings().removeClass('active');
+                        $frames.eq(settings.looping !== 'infinite' ? currentSlide - 1 : currentSlide).addClass('active').siblings().removeClass('active');
                     }
                     
                 },
