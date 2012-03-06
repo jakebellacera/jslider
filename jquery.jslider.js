@@ -235,6 +235,8 @@
 
                     $frames.removeClass('active');
                     $activeFrames.addClass('active');
+
+                    console.log(currentSlide);
                 },
 
                 calculateFrameSize = function () {
@@ -344,55 +346,51 @@
                     var dir = toSlide < currentSlide ? -1 : 1,
                         n = settings.looping !== 'infinite' ? toSlide - 1 : toSlide,
                         position = frameWidth * visibleFrames * n,
-                        checkSlide = function (marginDir) {
-
-                            var dimension = function () {
-                                var value;
-
-                                if (marginDir === 'top' || marginDir === 'bottom') {
-                                    value = boundaryHeight;
-                                } else {
-                                    value = boundaryWidth;
-                                }
-
-                                return value;
-                            };
-
-                            currentSlide = toSlide;
-
-                            if (toSlide > slides) {
-
-                                currentSlide = 1;
-                                $container.css('margin-' + marginDir, -dimension());
-
-                            } else if (settings.looping === 'infinite' && toSlide === 0) {
-
-                                currentSlide = slides;
-                                $container.css('margin-' + marginDir, -dimension() * (slides));
-
-                            }
-                        };
+                        marginDir,
+                        dimension;
                     
                     if (direction === 'inverse') {
                         
                         // Inversed slide transition ()
                         $container.filter(':not(:animated)').animate({
                             'margin-right': -position
-                        }, settings.speed, settings.easing, checkSlide('right'));
+                        }, settings.speed, settings.easing);
+                        marginDir = 'right';
 
                     } else if (direction === 'vertical') {
                         
                         // Vertical slide transition (ttb)
                         $container.filter(':not(:animated)').animate({
                             marginTop: -position
-                        }, settings.speed, settings.easing,checkSlide('top'));
-
+                        }, settings.speed, settings.easing);
+                        marginDir = 'top';
                     } else {
 
                         // Basic slide transition (ltr)
                         $container.filter(':not(:animated)').animate({
                             'margin-left': -position
-                        }, settings.speed, settings.easing, checkSlide('left'));
+                        }, settings.speed, settings.easing);
+                        marginDir = 'left';
+                    }
+
+                    // Determine if we should use the height/width
+                    if (marginDir === 'top' || marginDir === 'bottom') {
+                        dimension = boundaryHeight;
+                    } else {
+                        dimension = boundaryWidth;
+                    }
+
+                    currentSlide = toSlide;
+
+                    if (toSlide > slides) {
+
+                        currentSlide = 1;
+                        $container.css('margin-' + marginDir, -dimension);
+
+                    } else if (settings.looping === 'infinite' && toSlide === 0) {
+
+                        currentSlide = slides;
+                        $container.css('margin-' + marginDir, -dimension * (slides - 1));
 
                     }
                     
