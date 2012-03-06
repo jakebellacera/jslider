@@ -253,8 +253,6 @@
                             height: frameHeight
                         });
                     });
-
-                    window.frames = $frames;
                 },
 
                 gotoSlide = function (toSlide) {
