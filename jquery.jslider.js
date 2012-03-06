@@ -236,10 +236,12 @@
                     $container.css({
                         width: function () {
                             var value;
-                            if (settings.transition === 'slide') {
-                                value = $frames.length * width;
+                            if (settings.transition === 'slide' && settings.looping == 'infinite') {
+                                value = (slides + 2) * width; // incorportate the cloned slides
+                            } else if (settings.transition === 'slide') {
+                                value = slides * width;
                             } else {
-                                value = $frames.length * width;
+                                value = width;
                             }
 
                             return value;
@@ -257,6 +259,7 @@
 
                 gotoSlide = function (toSlide) {
                     // Handles slide navigation
+                    var delay;
 
                     if (settings.looping === true || settings.looping && settings.transition !== 'slide') {
                         if (toSlide > slides) {
@@ -270,21 +273,32 @@
                         if (toSlide > slides || toSlide <= 0) { return; }
                     }
 
+                    // Kill the timer
+                    stopTimer();
+
                     // Perform the animation
                     switch(settings.transition) {
                         case 'slide':
                             slide(toSlide, settings.direction);
+                            delay = settings.speed;
                             break;
                         case 'crossfade':
                             fade(toSlide, true);
+                            delay = settings.speed;
                             break;
                         case 'fade':
                             fade(toSlide);
+                            delay = settings.speed;
                             break;
                         default:
                             cut(toSlide);
+                            delay = 0;
                             break;
                     }
+
+                    setTimeout(function() {
+                        startTimer();
+                    }, delay)
 
 
                     if (!settings.looping && settings.buttons) {
@@ -312,7 +326,7 @@
                 slide = function (toSlide, direction) {
 
                     var dir = toSlide < currentSlide ? -1 : 1,
-                        n = toSlide,
+                        n = settings.looping !== 'infinite' ? toSlide - 1 : toSlide,
                         position = frameWidth * visibleFrames * n;
                     
                     if (direction === 'inverse') {
@@ -407,14 +421,14 @@
                  * Timers
                  */
                 startTimer = function () {
-                    auto = setInterval(function () {
+                    auto = setTimeout(function () {
                         gotoSlide(currentSlide + 1);
                     }, settings.duration);
                 },
                 
                 stopTimer = function () {
                     if (settings.auto !== false){
-                        clearInterval(auto);
+                        clearTimeout(auto);
                     }
                 };
 
