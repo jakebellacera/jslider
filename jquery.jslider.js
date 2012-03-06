@@ -64,6 +64,8 @@
                 visibleFrames,
                 slides,
                 currentSlide = 1,
+                currentOffset,
+                $activeFrames,
                 settings = $.extend({
                     visible: 1,                     // Amount of slides visible at a time.
                     transition: 'slide',            // Type of transition [slide/crossfade/fade/cut].
@@ -222,6 +224,17 @@
                         });
                     }
 
+                    // Determine if we need to perform an offset for selecting frames
+                    currentOffset = settings.looping !== 'infinite' && settings.transition === 'slide' ? 1 : 0;
+                    setActiveSlides();
+
+                },
+
+                setActiveSlides = function() {
+                    $activeFrames = $frames.slice((currentSlide - currentOffset) * visibleFrames, ((currentSlide - currentOffset) + 1) * visibleFrames);
+
+                    $frames.removeClass('active');
+                    $activeFrames.addClass('active');
                 },
 
                 calculateFrameSize = function () {
@@ -236,6 +249,7 @@
                     $container.css({
                         width: function () {
                             var value;
+
                             if (settings.transition === 'slide' && settings.looping == 'infinite') {
                                 value = (slides + 2) * width; // incorportate the cloned slides
                             } else if (settings.transition === 'slide') {
@@ -296,9 +310,11 @@
                             break;
                     }
 
+                    // after the transition has completed, start the timer and set active slides
                     setTimeout(function() {
                         startTimer();
-                    }, delay)
+                        setActiveSlides();
+                    }, delay);
 
 
                     if (!settings.looping && settings.buttons) {
@@ -327,65 +343,57 @@
 
                     var dir = toSlide < currentSlide ? -1 : 1,
                         n = settings.looping !== 'infinite' ? toSlide - 1 : toSlide,
-                        position = frameWidth * visibleFrames * n;
+                        position = frameWidth * visibleFrames * n,
+                        checkSlide = function (marginDir) {
+
+                            var dimension = function () {
+                                var value;
+
+                                if (marginDir === 'top' || marginDir === 'bottom') {
+                                    value = boundaryHeight;
+                                } else {
+                                    value = boundaryWidth;
+                                }
+
+                                return value;
+                            };
+
+                            currentSlide = toSlide;
+
+                            if (toSlide > slides) {
+
+                                currentSlide = 1;
+                                $container.css('margin-' + marginDir, -dimension());
+
+                            } else if (settings.looping === 'infinite' && toSlide === 0) {
+
+                                currentSlide = slides;
+                                $container.css('margin-' + marginDir, -dimension() * (slides));
+
+                            }
+                        };
                     
                     if (direction === 'inverse') {
                         
                         // Inversed slide transition ()
                         $container.filter(':not(:animated)').animate({
                             'margin-right': -position
-                        }, settings.speed, settings.easing, function () {
-                            checkSlide('right');
-                        });
+                        }, settings.speed, settings.easing, checkSlide('right'));
 
                     } else if (direction === 'vertical') {
                         
                         // Vertical slide transition (ttb)
                         $container.filter(':not(:animated)').animate({
                             marginTop: -position
-                        }, settings.speed, settings.easing, function () {
-                            checkSlide('top');
-                        });
+                        }, settings.speed, settings.easing,checkSlide('top'));
 
                     } else {
 
                         // Basic slide transition (ltr)
                         $container.filter(':not(:animated)').animate({
                             'margin-left': -position
-                        }, settings.speed, settings.easing, function () {
-                            checkSlide('left');
-                        });
+                        }, settings.speed, settings.easing, checkSlide('left'));
 
-                    }
-
-                    function checkSlide (marginDir) {
-
-                        var dimension = function () {
-                            var value;
-                            if (marginDir === 'top' || marginDir === 'bottom') {
-                                value = boundaryHeight;
-                            } else {
-                                value = boundaryWidth;
-                            }
-
-                            return value;
-                        };
-
-                        currentSlide = toSlide;
-
-                        if (toSlide > slides) {
-
-                            currentSlide = 1;
-                            $container.css('margin-' + marginDir, -dimension());
-
-                        } else if (settings.looping === 'infinite' && toSlide === 0) {
-
-                            currentSlide = slides;
-                            $container.css('margin-' + marginDir, -dimension() * (slides));
-
-                        }
-
-                        $frames.eq(settings.looping !== 'infinite' ? currentSlide - 1 : currentSlide).addClass('active').siblings().removeClass('active');
                     }
                     
                 },
@@ -396,9 +404,9 @@
                         otherSlide = currentSlide - 1;
 
                     if (crossfade) {
-                        $frames.removeClass('active').hide().css('z-index', 1);
+                        $frames.hide().css('z-index', 1);
                         $frames.eq(otherSlide).show(0, function() {
-                            $frames.eq(actualSlide).css('z-index', 2).addClass('active').fadeIn(settings.speed);
+                            $frames.eq(actualSlide).css('z-index', 2).fadeIn(settings.speed);
                         });
                     } else {
                         $frames.eq(otherSlide).fadeOut(settings.speed);
@@ -411,9 +419,8 @@
                 cut = function (toSlide) {
 
                     var actualSlide = toSlide - 1;
-                    currentSlide = toSlide;
-                        
                     $frames.eq(actualSlide).show().addClass('active').siblings().hide().removeClass('active');
+                    currentSlide = toSlide;
                         
                 },
 
