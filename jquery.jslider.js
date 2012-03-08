@@ -61,7 +61,6 @@
                 $nextButton,
                 $pagination,
                 auto,
-                visibleFrames,
                 slides,
                 currentSlide = 1,
                 currentOffset,
@@ -83,8 +82,8 @@
                 }, options),
 
                 init = function () {
-                    //Set how many frames are per slide
-                    visibleFrames = Math.ceil(settings.visible);
+                    // Sanitize the visible slides setting value. WE CAN'T MESS THIS UP!
+                    settings.visible = Math.ceil(settings.visible);
 
                     // Wrapper: contains the entire slider.
                     $wrapper = $this
@@ -110,18 +109,18 @@
                         $frames = $container.children();
 
                         // pad slides with empty elements if required
-                        if ($frames.length % visibleFrames !== 0) {
+                        if ($frames.length % settings.visible !== 0) {
                             // Find the remaining amount of slides required to finish the last slide.
-                            $container.append(repeat('<div class="empty"/>', visibleFrames - ($frames.length % visibleFrames)));
+                            $container.append(repeat('<div class="empty"/>', settings.visible - ($frames.length % settings.visible)));
                         }
 
                         $frames = $container.children();
 
                         $frames.filter(':first').before(
-                            $frames.slice(-visibleFrames).clone().addClass('cloned')
+                            $frames.slice(-settings.visible).clone().addClass('cloned')
                         );
                         $frames.filter(':last').after(
-                            $frames.slice(0, visibleFrames).clone().addClass('cloned')
+                            $frames.slice(0, settings.visible).clone().addClass('cloned')
                         );
                     }
 
@@ -130,9 +129,9 @@
                     // How many slides will we be transitioning.
                     if (settings.looping === 'infinite' && settings.transition === 'slide') {
                         // remove excess padding frames
-                        slides = Math.ceil(($frames.length - 2) / visibleFrames);
+                        slides = Math.ceil(($frames.length - 2) / settings.visible);
                     } else {
-                        slides = Math.ceil($frames.length / visibleFrames);
+                        slides = Math.ceil($frames.length / settings.visible);
                     }
 
                     $frames.addClass('slider-frame');
@@ -236,7 +235,7 @@
 
                 setActiveSlides = function() {
                     console.log('Setting active slides');
-                    $activeFrames = $frames.slice((currentSlide - currentOffset) * visibleFrames, ((currentSlide - currentOffset) + 1) * visibleFrames);
+                    $activeFrames = $frames.slice((currentSlide - currentOffset) * settings.visible, ((currentSlide - currentOffset) + 1) * settings.visible);
 
                     $frames.removeClass('active');
                     $activeFrames.addClass('active');
@@ -247,7 +246,7 @@
                         height = $boundary.innerHeight();
                     boundaryWidth = width;
                     boundaryHeight = height;
-                    frameWidth = width / visibleFrames;
+                    frameWidth = width / settings.visible;
                     frameHeight = height;
 
                     // Calculate container size
@@ -409,7 +408,7 @@
                     var actualSlide = toSlide - 1;
                     $frames.eq(actualSlide).show().addClass('active').siblings().hide().removeClass('active');
                     currentSlide = toSlide;
-                    
+
                     startTimer();
                     setActiveSlides();
                 },
