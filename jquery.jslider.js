@@ -96,7 +96,8 @@
                     // Recommended: set overflow: hidden; in CSS as well to prevent "jump"
                     $boundary = $wrapper.wrapInner('<div/>').children()
                                     .addClass('slider-boundary')
-                                    .css('overflow', 'hidden');
+                                    .css('overflow', 'hidden')
+                                    .css('position', 'relative');
 
                     // Container: contains all of the frames
                     $container = $boundary.wrapInner('<div/>').children()
@@ -137,9 +138,13 @@
                     $frames.addClass('slider-frame');
 
                     // Some styling for the individual frames
-                    if (settings.transition === 'slide') {
+                    if (settings.transition === 'slide' && settings.direction !== 'inverse') {
                         $frames.css('float', 'left');
                     } else if (settings.transition === 'slide' && settings.direction === 'inverse') {
+                        $container.css({
+                            'position': 'absolute',
+                            'right': 0
+                        });
                         $frames.css('float', 'right');
                     } else {
                         $container.css('position', 'relative');
@@ -172,7 +177,13 @@
 
                     if (settings.looping === 'infinite' && settings.transition === 'slide') {
                         // Since we're adding a padding frame, we need to shift forward one.
-                        $container.css('margin-left', -boundaryWidth);
+                        $container.css(function() {
+                            if (settings.direction === 'inverse') {
+                                return 'margin-right';
+                            } else {
+                                return 'margin-left';
+                            }
+                        }(), -boundaryWidth);
                     }
 
 
@@ -197,35 +208,28 @@
 
                             // Fix le margins
                             if (settings.transition === 'slide') {
-                                var dir = function () {
-                                        var value;
-                                        if (settings.transition === 'vertical') {
-                                            value = 'top';
-                                        } else if (settings.transition === 'slide-inverse') {
-                                            value = 'right';
-                                        } else {
-                                            value = 'left';
-                                        }
+                                var dir, amount;
 
-                                        return value;
-                                    },
-                                    amount = function () {
-                                        var value;
-                                        if (settings.looping === 'infinite') {
-                                            value = boundaryWidth*currentSlide + 1;
-                                        } else {
-                                            value = boundaryWidth*currentSlide;
-                                        }
+                                // Right or left?
+                                if (settings.transition === 'slide-inverse') {
+                                    dir = 'margin-right';
+                                } else {
+                                    dir = 'margin-left';
+                                }
 
-                                        return value;
-                                    };
-                                $container.css('margin-' + dir(), -amount());
+                                if (settings.looping === 'infinite') {
+                                    amount = boundaryWidth*currentSlide + 1;
+                                } else {
+                                    amount = boundaryWidth*currentSlide;
+                                }
+
+                                $container.css(dir, -amount);
                             }
                         });
                     }
 
                     // Determine if we need to perform an offset for selecting frames
-                    currentOffset = settings.looping !== 'infinite' && settings.transition === 'slide' ? 1 : 0;
+                    currentOffset = settings.transition !== 'slide' || settings.looping !== 'infinite' && settings.transition === 'slide' ? 1 : 0;
                     setActiveSlides();
 
                 },
@@ -235,8 +239,6 @@
 
                     $frames.removeClass('active');
                     $activeFrames.addClass('active');
-
-                    console.log(currentSlide);
                 },
 
                 calculateFrameSize = function () {
@@ -316,7 +318,7 @@
                     setTimeout(function() {
                         startTimer();
                         setActiveSlides();
-                    }, delay);
+                    }, delay + 10);
 
 
                     if (!settings.looping && settings.buttons) {
@@ -344,56 +346,40 @@
                 slide = function (toSlide, direction) {
 
                     var dir = toSlide < currentSlide ? -1 : 1,
-                        n = settings.looping !== 'infinite' ? toSlide - 1 : toSlide,
-                        position = frameWidth * visibleFrames * n,
-                        marginDir,
-                        dimension;
-                    
-                    if (direction === 'inverse') {
-                        
-                        // Inversed slide transition ()
-                        $container.filter(':not(:animated)').animate({
-                            'margin-right': -position
-                        }, settings.speed, settings.easing);
-                        marginDir = 'right';
+                        distance = boundaryWidth * dir,
+                        marginDir = settings.direction === 'inverse' ? 'right' : 'left',
+                        animations = {};
 
-                    } else if (direction === 'vertical') {
-                        
-                        // Vertical slide transition (ttb)
-                        $container.filter(':not(:animated)').animate({
-                            marginTop: -position
-                        }, settings.speed, settings.easing);
-                        marginDir = 'top';
+                    if (settings.looping === true && toSlide === 1) {
+                        // exceeded the slide count, to back to 0
+                        animations['margin-' + marginDir] = 0;
+                    } else if (settings.looping === true && toSlide === slides) {
+                        // can't go negative, 
+                        animations['margin-' + marginDir] = -boundaryWidth * (slides - 1);
                     } else {
-
-                        // Basic slide transition (ltr)
-                        $container.filter(':not(:animated)').animate({
-                            'margin-left': -position
-                        }, settings.speed, settings.easing);
-                        marginDir = 'left';
-                    }
-
-                    // Determine if we should use the height/width
-                    if (marginDir === 'top' || marginDir === 'bottom') {
-                        dimension = boundaryHeight;
-                    } else {
-                        dimension = boundaryWidth;
-                    }
-
-                    currentSlide = toSlide;
-
-                    if (toSlide > slides) {
-
-                        currentSlide = 1;
-                        $container.css('margin-' + marginDir, -dimension);
-
-                    } else if (settings.looping === 'infinite' && toSlide === 0) {
-
-                        currentSlide = slides;
-                        $container.css('margin-' + marginDir, -dimension * (slides - 1));
-
+                        animations['margin-' + marginDir] = '-=' + distance;
                     }
                     
+                    $container.filter(':not(:animated)').animate(animations, settings.speed, settings.easing, checkSlide);
+                    
+
+                    function checkSlide () {
+                        currentSlide = toSlide;
+
+                        if (toSlide > slides) {
+
+                            currentSlide = 1;
+                            console.log('Too far, going to slide ' + currentSlide);
+                            $container.css('margin-' + marginDir, -boundaryWidth);
+
+                        } else if (settings.looping === 'infinite' && toSlide === 0) {
+
+                            currentSlide = slides;
+                            console.log('Too far back! Go to the end at slide ' + currentSlide);
+                            $container.css('margin-' + marginDir, -boundaryWidth * slides);
+
+                        }
+                    }
                 },
 
                 fade = function (toSlide, crossfade) {
@@ -426,13 +412,15 @@
                  * Timers
                  */
                 startTimer = function () {
-                    auto = setTimeout(function () {
-                        gotoSlide(currentSlide + 1);
-                    }, settings.duration);
+                    if (settings.auto) {
+                            auto = setTimeout(function () {
+                            gotoSlide(currentSlide + 1);
+                        }, settings.duration);
+                    }
                 },
                 
                 stopTimer = function () {
-                    if (settings.auto !== false){
+                    if (settings.auto){
                         clearTimeout(auto);
                     }
                 };
