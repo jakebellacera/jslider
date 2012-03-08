@@ -235,6 +235,7 @@
                 },
 
                 setActiveSlides = function() {
+                    console.log('Setting active slides');
                     $activeFrames = $frames.slice((currentSlide - currentOffset) * visibleFrames, ((currentSlide - currentOffset) + 1) * visibleFrames);
 
                     $frames.removeClass('active');
@@ -314,12 +315,6 @@
                             break;
                     }
 
-                    // after the transition has completed, start the timer and set active slides
-                    setTimeout(function() {
-                        startTimer();
-                        setActiveSlides();
-                    }, delay + 10);
-
 
                     if (!settings.looping && settings.buttons) {
                         // Sets 'previous' button to disabled if on first frame
@@ -379,6 +374,9 @@
                             $container.css('margin-' + marginDir, -boundaryWidth * slides);
 
                         }
+
+                        startTimer();
+                        setActiveSlides();
                     }
                 },
 
@@ -390,11 +388,17 @@
                     if (crossfade) {
                         $frames.hide().css('z-index', 1);
                         $frames.eq(otherSlide).show(0, function() {
-                            $frames.eq(actualSlide).css('z-index', 2).fadeIn(settings.speed);
+                            $frames.eq(actualSlide).css('z-index', 2).fadeIn(settings.speed, function() {
+                                startTimer();
+                                setActiveSlides();
+                            });
                         });
                     } else {
                         $frames.eq(otherSlide).fadeOut(settings.speed);
-                        $frames.eq(actualSlide).fadeIn(settings.speed);
+                        $frames.eq(actualSlide).fadeIn(settings.speed, function() {
+                            startTimer();
+                            setActiveSlides();
+                        });
                     }
 
                     currentSlide = toSlide;
@@ -405,7 +409,9 @@
                     var actualSlide = toSlide - 1;
                     $frames.eq(actualSlide).show().addClass('active').siblings().hide().removeClass('active');
                     currentSlide = toSlide;
-                        
+                    
+                    startTimer();
+                    setActiveSlides();
                 },
 
                 /**
