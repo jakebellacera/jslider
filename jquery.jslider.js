@@ -149,7 +149,7 @@
                         $frames.css('float', 'right');
                     } else {
                         $container.css('position', 'relative');
-                        $frames.css('position', 'absolute').slice(currentSlide, slides).css('display', 'none');
+                        $frames.css('position', 'absolute').slice(currentSlide * settings.visible, slides + 1).css('display', 'none');
                     }
 
                     /* Append buttons */
@@ -236,7 +236,6 @@
                 },
 
                 setActiveSlides = function() {
-                    console.log('Setting active slides');
                     $activeFrames = $frames.slice((currentSlide - currentOffset) * settings.visible, ((currentSlide - currentOffset) + 1) * settings.visible);
 
                     $frames.removeClass('active');
@@ -245,7 +244,9 @@
 
                 calculateFrameSize = function () {
                     var width = $boundary.innerWidth(),
-                        height = $boundary.innerHeight();
+                        height = $boundary.innerHeight(),
+                        i = 0,
+                        left = 0;
                     boundaryWidth = width;
                     boundaryHeight = height;
                     frameWidth = width / settings.visible;
@@ -269,11 +270,24 @@
                         height: frameHeight
                     });
 
-                    $frames.each(function () {
-                        $(this).css({
+
+                    $frames.each(function (key, val) {
+                        var styles = {
                             width: frameWidth,
                             height: frameHeight
-                        });
+                        }
+
+                        if (i <= (settings.visible - 1)) {
+                            left = i * frameWidth;
+                        } else {
+                            left = 0;
+                            i = 0;
+                        }
+
+                        styles.left = left;
+                        $(this).css(styles);
+                        console.log(i, left);
+                        i++;
                     });
                 },
 
@@ -365,13 +379,11 @@
                         if (toSlide > slides) {
 
                             currentSlide = 1;
-                            console.log('Too far, going to slide ' + currentSlide);
                             $container.css('margin-' + marginDir, -boundaryWidth);
 
                         } else if (settings.looping === 'infinite' && toSlide === 0) {
 
                             currentSlide = slides;
-                            console.log('Too far back! Go to the end at slide ' + currentSlide);
                             $container.css('margin-' + marginDir, -boundaryWidth * slides);
 
                         }
@@ -383,20 +395,23 @@
 
                 fade = function (toSlide, crossfade) {
                     // Hide all the frames, show the current slide, fade in the next slide.
-                    var actualSlide = toSlide - 1,
-                        otherSlide = currentSlide - 1;
+                    var actualSlide = settings.visible <= 1 ? toSlide - 1 : (toSlide - 1) * settings.visible,
+                        otherSlide = settings.visible <= 1 ? currentSlide - 1 : (currentSlide - 1) * settings.visible,
+                        offset = function (input) {
+                            return input + settings.visible;
+                        };
 
                     if (crossfade) {
                         $frames.hide().css('z-index', 1);
-                        $frames.eq(otherSlide).show(0, function() {
-                            $frames.eq(actualSlide).css('z-index', 2).fadeIn(settings.speed, function() {
+                        $frames.slice(otherSlide, offset(otherSlide)).show(0, function() {
+                            $frames.eq(actualSlide, offset(actualSlide)).css('z-index', 2).fadeIn(settings.speed, function() {
                                 startTimer();
                                 setActiveSlides();
                             });
                         });
                     } else {
-                        $frames.eq(otherSlide).fadeOut(settings.speed);
-                        $frames.eq(actualSlide).fadeIn(settings.speed, function() {
+                        $frames.slice(otherSlide, offset(otherSlide)).fadeOut(settings.speed);
+                        $frames.slice(actualSlide, offset(actualSlide)).fadeIn(settings.speed, function() {
                             startTimer();
                             setActiveSlides();
                         });
@@ -407,12 +422,17 @@
 
                 cut = function (toSlide) {
 
-                    var actualSlide = toSlide - 1;
-                    $frames.eq(actualSlide).show().addClass('active').siblings().hide().removeClass('active');
-                    currentSlide = toSlide;
+                    var actualSlide = actualSlide = settings.visible <= 1 ? toSlide - 1 : (toSlide - 1) * settings.visible,
+                        offset = function (input) {
+                            return input + settings.visible;
+                        };
 
-                    startTimer();
-                    setActiveSlides();
+                    $frames.hide().removeClass('active').slice(actualSlide, offset(actualSlide)).show(0, function() {
+                        currentSlide = toSlide;
+
+                        startTimer();
+                        setActiveSlides();
+                    });
                 },
 
                 /**
@@ -420,8 +440,8 @@
                  */
                 startTimer = function () {
                     if (settings.auto && slides > 1) {
-                            auto = setTimeout(function () {
-                                console.log('starting timer');
+                        clearTimeout(auto);
+                        auto = setTimeout(function () {
                             gotoSlide(currentSlide + 1);
                         }, settings.duration);
                     }
