@@ -286,7 +286,6 @@
 
                         styles.left = left;
                         $(this).css(styles);
-                        console.log(i, left);
                         i++;
                     });
                 },
@@ -404,7 +403,7 @@
                     if (crossfade) {
                         $frames.hide().css('z-index', 1);
                         $frames.slice(otherSlide, offset(otherSlide)).show(0, function() {
-                            $frames.eq(actualSlide, offset(actualSlide)).css('z-index', 2).fadeIn(settings.speed, function() {
+                            $frames.slice(actualSlide, offset(actualSlide)).css('z-index', 2).fadeIn(settings.speed, function() {
                                 startTimer();
                                 setActiveSlides();
                             });
