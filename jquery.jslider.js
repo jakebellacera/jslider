@@ -149,7 +149,7 @@
                         $frames.css('float', 'right');
                     } else {
                         $container.css('position', 'relative');
-                        $frames.css('position', 'absolute').slice(currentSlide * settings.visible, slides + 1).css('display', 'none');
+                        $frames.slice(currentSlide * settings.visible, slides + 1).css('display', 'none');
                     }
                     
                     // Adding "last" class to each last frame in a slide
@@ -290,7 +290,9 @@
                             i = 0;
                         }
 
-                        styles.left = left;
+                        if (settings.transition !== 'slide') {
+                            styles.left = left;
+                        }
                         $(this).css(styles);
                         i++;
                     });
