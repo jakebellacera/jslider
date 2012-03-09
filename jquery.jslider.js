@@ -108,28 +108,30 @@
 
                         $frames = $container.children();
 
-                        // pad slides with empty elements if required
-                        if ($frames.length % settings.visible !== 0) {
-                            // Find the remaining amount of slides required to finish the last slide.
-                            $container.append(repeat('<div class="empty"/>', settings.visible - ($frames.length % settings.visible)));
+                        if ($frames.length > settings.visible) {
+                            // pad slides with empty elements if required
+                            if ($frames.length % settings.visible !== 0) {
+                                // Find the remaining amount of slides required to finish the last slide.
+                                $container.append(repeat('<div class="empty"/>', settings.visible - ($frames.length % settings.visible)));
+                            }
+
+                            $frames = $container.children();
+
+                            $frames.filter(':first').before(
+                                $frames.slice(-settings.visible).clone().addClass('cloned')
+                            );
+                            $frames.filter(':last').after(
+                                $frames.slice(0, settings.visible).clone().addClass('cloned')
+                            );
                         }
-
-                        $frames = $container.children();
-
-                        $frames.filter(':first').before(
-                            $frames.slice(-settings.visible).clone().addClass('cloned')
-                        );
-                        $frames.filter(':last').after(
-                            $frames.slice(0, settings.visible).clone().addClass('cloned')
-                        );
                     }
 
                     $frames = $container.children();
 
                     // How many slides will we be transitioning.
-                    if (settings.looping === 'infinite' && settings.transition === 'slide') {
+                    if (settings.looping === 'infinite' && settings.transition === 'slide' && $frames.length > settings.visible) {
                         // remove excess padding frames
-                        slides = Math.ceil(($frames.length - 2) / settings.visible);
+                        slides = Math.ceil(($frames.length - (settings.visible * 2)) / settings.visible);
                     } else {
                         slides = Math.ceil($frames.length / settings.visible);
                     }
@@ -151,7 +153,7 @@
                     }
 
                     /* Append buttons */
-                    if (settings.buttons) {
+                    if (settings.buttons && slides > 1) {
                         $prevButton = $('<a class="slider-button slider-prev"/>')
                                             .html(settings.prevText)
                                             .on('click', function (e) {
@@ -174,7 +176,7 @@
 
                     calculateFrameSize();
 
-                    if (settings.looping === 'infinite' && settings.transition === 'slide') {
+                    if (settings.looping === 'infinite' && settings.transition === 'slide' && slides > 1) {
                         // Since we're adding a padding frame, we need to shift forward one.
                         $container.css(function() {
                             if (settings.direction === 'inverse') {
@@ -417,8 +419,9 @@
                  * Timers
                  */
                 startTimer = function () {
-                    if (settings.auto) {
+                    if (settings.auto && slides > 1) {
                             auto = setTimeout(function () {
+                                console.log('starting timer');
                             gotoSlide(currentSlide + 1);
                         }, settings.duration);
                     }

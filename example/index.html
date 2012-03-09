@@ -34,10 +34,11 @@
 	<script>
 		$(function () {
 			$('#slider').jslider({
-				transition: 'fade',
+				visible: 2,
+				transition: 'slide',
 				easing: 'easeInOutExpo',
-				//looping: 'infinite',
-				auto: false,
+				looping: 'infinite',
+				auto: true,
 				fluid: false
 			});
 		});
