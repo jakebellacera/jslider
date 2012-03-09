@@ -1,7 +1,7 @@
 /*
  * jslider - An advanced content slider
  * ====================================
- * @version v0.5
+ * @version v0.7
  * @url     http://github.com/jakebellacera/jslider
  * @author  (c) Jake Bellacera - http://github.com/jakebellacera
  */
@@ -71,7 +71,7 @@
                     direction: 'normal',            // direction of the sliding transition. Will not work if transition != slide.
                     looping: true,                  // True: loops back to beginning/end. Infinite: Infinite looping mode.
                     speed: 800,                     // Animation speed. If transition == 'cut', this is ignored.
-                    easing: 'swing',                // jQuery.easing.
+                    easing: 'swing',                // Easing for the animations
                     buttons: true,                  // Enable prev/next buttons.
                     nextText: 'Next Slide',         // Text for next button. HTML is allowed.
                     prevText: 'Previous Slide',     // Text for prev button. HTML is allowed.
@@ -150,6 +150,12 @@
                     } else {
                         $container.css('position', 'relative');
                         $frames.css('position', 'absolute').slice(currentSlide * settings.visible, slides + 1).css('display', 'none');
+                    }
+                    
+                    // Adding "last" class to each last frame in a slide
+                    if (settings.visible > 1) {
+                        console.log('adding classes...');
+                        $frames.each(function (i, val) { if (i % settings.visible === (settings.visible - 1)) { val.classList.add('last'); } });
                     }
 
                     /* Append buttons */
