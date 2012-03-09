@@ -1,7 +1,7 @@
 /*
  * jslider - An advanced content slider
  * ====================================
- * @version v0.7
+ * @version v0.6
  * @url     http://github.com/jakebellacera/jslider
  * @author  (c) Jake Bellacera - http://github.com/jakebellacera
  */
