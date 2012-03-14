@@ -41,9 +41,9 @@
     $.fn.jslider = function (options, callback) {
 
         function repeat(str, n) {
-            var derp = [];
-            derp.length = n + 1;
-            return derp.join(str);
+            var items = [];
+            items.length = n + 1;
+            return items.join(str);
         }
 
         $(this).each(function (key, val) {
@@ -149,12 +149,11 @@
                         $frames.css('float', 'right');
                     } else {
                         $container.css('position', 'relative');
-                        $frames.slice(currentSlide * settings.visible, slides + 1).css('display', 'none');
+                        $frames.css('position', 'absolute').slice(currentSlide * settings.visible, slides + 1).css('display', 'none');
                     }
                     
                     // Adding "last" class to each last frame in a slide
                     if (settings.visible > 1) {
-                        console.log('adding classes...');
                         $frames.each(function (i, val) { if (i % settings.visible === (settings.visible - 1)) { val.classList.add('last'); } });
                     }
 
