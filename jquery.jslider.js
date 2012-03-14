@@ -160,7 +160,7 @@
                         $container.css('position', 'absolute');
                     } else {
                         $container.css('position', 'relative');
-                        $frames.slice(currentSlide * settings.visible, slides + 1).css('display', 'none');
+                        $frames.slice(currentSlide * settings.visible, settings.visible * slides).css('display', 'none');
                     }
 
                     $frames.css('position', 'absolute');
@@ -170,7 +170,7 @@
                         $frames.each(function (i, val) { if (i % settings.visible === (settings.visible - 1)) { val.classList.add('last'); } });
                     }
 
-                    /* Append buttons */
+                    // Append buttons, if enabled
                     if (settings.buttons && slides > 1) {
                         $prevButton = $('<a class="slider-button slider-prev"/>')
                                             .html(settings.prevText)
@@ -194,31 +194,20 @@
 
                     calculateFrameSize();
 
-                    /* Start the timer */
-                    if (settings.auto) {
-                        startTimer(settings.duration);
-                        
-                        if (settings.hoverPause) {
-                            $boundary.hover(function () {
-                                stopTimer();
-                            }, function () {
-                                startTimer();
-                            });
-                        }
-                    }
-
                     // Calculate initial offset margins on $container
-                    $container.css((function() {
-                        var value;
+                    if (settings.transition === 'slide' && settings.looping === 'infinite') {
+                        $container.css((function() {
+                            var value;
 
-                        if (settings.transition === 'slide' && settings.direction === 'inverse') {
-                            value = 'margin-right';
-                        } else {
-                            value = 'margin-left';
-                        }
+                            if (settings.direction === 'inverse') {
+                                value = 'margin-right';
+                            } else {
+                                value = 'margin-left';
+                            }
 
-                        return value;
-                    }()), initialOffset());
+                            return value;
+                        }()), -boundaryWidth - settings.gutterWidth);
+                    }
 
                     // Any additional bindings should be placed here
 
@@ -238,15 +227,6 @@
                                     dir = 'left';
                                 }
 
-                                // if (settings.looping === 'infinite') {
-                                //     amount = ;
-                                // } else {
-                                //     amount = boundaryWidth*currentSlide;
-                                // }
-
-                                // // Append the gutterWidth
-                                // amount + settings.gutterWidth;
-
                                 styles['margin-' + dir] = -(boundaryWidth * currentSlide) - (settings.gutterWidth * (slides));
 
                                 $container.css(styles);
@@ -259,21 +239,24 @@
 
                     setActiveSlides();
 
-                },
-
-                initialOffset = function () {
-                    var amount;
-
-                    if (settings.transition === 'slide' && settings.looping === 'infinite') {
-                        amount = boundaryWidth + (settings.gutterWidth * 2); // offset the cloned slides
-                    } else {
-                        amount = settings.gutterWidth
+                    // Start the timer initially if auto
+                    if (settings.auto) {
+                        startTimer(settings.duration);
+                        
+                        if (settings.hoverPause) {
+                            $boundary.hover(function () {
+                                stopTimer();
+                            }, function () {
+                                startTimer();
+                            });
+                        }
                     }
 
-                    return -amount;
                 },
 
                 setActiveSlides = function() {
+                    // Handles setting active slides.
+
                     $activeFrames = $frames.slice((currentSlide - currentOffset) * settings.visible, ((currentSlide - currentOffset) + 1) * settings.visible);
 
                     $frames.removeClass('active');
@@ -281,6 +264,8 @@
                 },
 
                 calculateFrameSize = function () {
+                    // Calculates sizes. Needs to be abstracted to DRY up fluid layouts
+
                     var width = $boundary.innerWidth(),
                         height = $boundary.innerHeight(),
                         i = 0,
@@ -306,20 +291,24 @@
                         height: frameHeight
                     });
 
+                    console.log($frames);
+
                     $frames.each(function (key, val) {
+                        // Loop through each frame
                         var distance = frameWidth + settings.gutterWidth,
                             styles = {
                                 width: frameWidth,
                                 height: frameHeight
                             };
-                        // Two checks, one for the iterator, one for left
-
+                        
+                        // Reset the counter if needed
                         if (settings.transition !== 'slide' && i == settings.visible) {
                             i = 0; // reset the counter
                         }
 
-                        pos = (distance * i) + settings.gutterWidth;
+                        pos = distance * i;
 
+                        // We need to ensure that positioning are places on right/left depending on the direction
                         if (settings.transition === 'slide' && settings.direction === 'inverse') {
                             styles.right = pos;
                         } else {
@@ -334,6 +323,7 @@
 
                 gotoSlide = function (toSlide) {
                     // Handles slide navigation
+
                     var delay;
 
                     if (settings.looping === true || settings.looping && settings.transition !== 'slide') {
@@ -397,8 +387,9 @@
                  * Transitions
                  */
 
-                // Slide - slides through the frames
                 slide = function (toSlide, direction) {
+                    console.log(currentSlide, toSlide, slides);
+                    // Slide - slides through the frames
 
                     var dir = toSlide < currentSlide ? -1 : 1,
                         distance = (boundaryWidth * dir) + (settings.gutterWidth * dir),
@@ -406,30 +397,37 @@
                         animations = {};
 
                     if (settings.looping === true && toSlide === 1) {
-                        // exceeded the slide count, to back to 0
-                        animations['margin-' + marginDir] = initialOffset();
-                    } else if (settings.looping === true && toSlide === slides) {
-                        // can't go negative, 
-                        animations['margin-' + marginDir] = (-distance * (slides - 1)) - settings.gutterWidth;
+                        // If we exceeded the slide count, to back to 0
+                        animations['margin-' + marginDir] = 0;
+                        currentSlide = 1;
+                    } else if (settings.looping === true && toSlide === (slides + 1)) {
+                        // We're going too far back, we need to go to the end
+                        animations['margin-' + marginDir] = distance * slides;
+                        currentSlide = slides;
                     } else {
+                        // Normal movement
                         animations['margin-' + marginDir] = '-=' + distance;
+                        currentSlide = toSlide;
                     }
                     
                     $container.filter(':not(:animated)').animate(animations, settings.speed, settings.easing, checkSlide);
                     
 
                     function checkSlide () {
-                        currentSlide = toSlide;
+                    // With the cloned slides, we can alter margins AFTER an
+                    // animation has been completed to give the infinite looping effect
 
-                        if (toSlide > slides) {
+                        if (settings.looping === 'infinite') {
+                            if (toSlide > slides) {
+                                // If too far forward, we need to silently shift back to the first slide.
+                                currentSlide = 1;
+                                $container.css('margin-' + marginDir, -distance);
 
-                            currentSlide = 1;
-                            $container.css('margin-' + marginDir, initialOffset());
-
-                        } else if (settings.looping === 'infinite' && toSlide === 0) {
-                            currentSlide = slides;
-                            $container.css('margin-' + marginDir, (distance * slides) - settings.gutterWidth);
-
+                            } else if (settings.looping === 'infinite' && toSlide === 0) {
+                                // If too far back, we need to silently shift to the last slide.
+                                currentSlide = slides;
+                                $container.css('margin-' + marginDir, distance * slides);
+                            }
                         }
 
                         startTimer();
@@ -438,7 +436,8 @@
                 },
 
                 fade = function (toSlide, crossfade) {
-                    // Hide all the frames, show the current slide, fade in the next slide.
+                    // Fade - fade out the previous frames, fade in the current ones
+
                     var actualSlide = settings.visible <= 1 ? toSlide - 1 : (toSlide - 1) * settings.visible,
                         otherSlide = settings.visible <= 1 ? currentSlide - 1 : (currentSlide - 1) * settings.visible,
                         offset = function (input) {
@@ -467,6 +466,7 @@
                 },
 
                 cut = function (toSlide) {
+                    // Cut - hide previous frames, show the current ones
 
                     var actualSlide = actualSlide = settings.visible <= 1 ? toSlide - 1 : (toSlide - 1) * settings.visible,
                         offset = function (input) {
@@ -485,6 +485,8 @@
                  * Timers
                  */
                 startTimer = function () {
+                    // Handles starting the timer
+
                     if (settings.auto && slides > 1) {
                         clearTimeout(auto);
                         auto = setTimeout(function () {
@@ -494,6 +496,8 @@
                 },
                 
                 stopTimer = function () {
+                    // Stops the timer
+
                     if (settings.auto){
                         clearTimeout(auto);
                     }
