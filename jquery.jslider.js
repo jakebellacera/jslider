@@ -213,7 +213,6 @@
 
                     if (settings.fluid) {
                         $(window).on('smartresize', function () {
-                            console.log('Working...');
                             calculateFrameSize();
 
                             // Fix le margins
@@ -291,8 +290,6 @@
                         height: frameHeight
                     });
 
-                    console.log($frames);
-
                     $frames.each(function (key, val) {
                         // Loop through each frame
                         var distance = frameWidth + settings.gutterWidth,
@@ -366,19 +363,15 @@
                         // Sets 'previous' button to disabled if on first frame
                         if (currentSlide === 1) {
                             $prevButton.addClass('disabled');
-                            console.log('can\'t go back');
                         } else {
                             $prevButton.removeClass('disabled');
-                            console.log('ok, you can go back');
                         }
                             
                         // Sets 'next' button to disabled if on last frame
                         if (currentSlide === slides) {
                             $nextButton.addClass('disabled');
-                            console.log('can\'t go forward');
                         } else {
                             $nextButton.removeClass('disabled');
-                            console.log('Ok you can go forward');
                         }
                     }
                 },
@@ -388,7 +381,6 @@
                  */
 
                 slide = function (toSlide, direction) {
-                    console.log(currentSlide, toSlide, slides);
                     // Slide - slides through the frames
 
                     var dir = toSlide < currentSlide ? -1 : 1,
