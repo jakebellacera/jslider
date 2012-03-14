@@ -1,9 +1,9 @@
 /*
  * jslider - An advanced content slider
  * ====================================
- * @version v0.7a
- * @url     http://github.com/jakebellacera/jslider
- * @author  (c) Jake Bellacera - http://github.com/jakebellacera
+ * @version:    v0.7a
+ * @url:        http://github.com/jakebellacera/jslider
+ * @author:     (c) Jake Bellacera - http://github.com/jakebellacera
  */
 
 
@@ -11,6 +11,11 @@
 
     'use strict';
 
+    /*
+        SmartResize plugin for debulking resizes.
+        TODO: Add a check to see if smartresize was already added, or namespace it.
+        @url: https://github.com/louisremi/jquery-smartresize
+    */
     var $event = $.event,
         resizeTimeout;
 
@@ -38,6 +43,7 @@
         return fn ? this.bind("smartresize", fn) : this.trigger("smartresize", ["execAsap"]);
     };
 
+    /* The jSlider plugin */
     $.fn.jslider = function (options, callback) {
 
         function repeat(str, n) {
