@@ -5,10 +5,11 @@
 
 	<style type="text/css">
 		* { margin: 0; padding: 0; }
-		#page { width: 960px; margin: 0 auto; }
+		#page { width: 100%; margin: 0 auto; }
 		#slider { padding: 50px 0; }
 		#slider .slider-boundary { width: 100%; height: 400px; border: 1px solid #000; }
 		.item { height: 100%; background: #CCC; opacity: 0.5; }
+		.item:nth-of-type(odd) { background: #333; }
 		.item.last { background: #333; }
 		.disabled { color: red; }
 	</style>
@@ -17,9 +18,6 @@
 
 	<div id="page">
 		<div id="slider">
-			<div class="item">
-				
-			</div>
 			<div class="item">
 				
 			</div>
@@ -48,7 +46,7 @@
 				looping: 'infinite',
 				easing: 'easeInOutExpo',
 				auto: false,
-				fluid: false
+				fluid: true
 			});
 		});
 	</script>

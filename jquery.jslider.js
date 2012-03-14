@@ -16,32 +16,34 @@
         TODO: Add a check to see if smartresize was already added, or namespace it.
         @url: https://github.com/louisremi/jquery-smartresize
     */
-    var $event = $.event,
-        resizeTimeout;
+    if (!window.jQuery.fn.smartresize) {
+        var $event = $.event,
+            resizeTimeout;
 
-    $event.special.smartresize = {
-        setup: function () {
-            $(this).bind("resize", $event.special.smartresize.handler);
-        },
-        teardown: function () {
-            $(this).unbind("resize", $event.special.smartresize.handler);
-        },
-        handler: function (event, execAsap) {
-            // Save the context
-            var context = this,
-                args = arguments;
+        $event.special.smartresize = {
+            setup: function () {
+                $(this).bind("resize", $event.special.smartresize.handler);
+            },
+            teardown: function () {
+                $(this).unbind("resize", $event.special.smartresize.handler);
+            },
+            handler: function (event, execAsap) {
+                // Save the context
+                var context = this,
+                    args = arguments;
 
-            // set correct event type
-            event.type = "smartresize";
+                // set correct event type
+                event.type = "smartresize";
 
-            if (resizeTimeout) { clearTimeout(resizeTimeout); }
-            resizeTimeout = setTimeout(function () { $.event.handle.apply(context, args); }, execAsap === "execAsap" ? 0 : 100);
-        }
-    };
+                if (resizeTimeout) { clearTimeout(resizeTimeout); }
+                resizeTimeout = setTimeout(function () { $.event.handle.apply(context, args); }, execAsap === "execAsap" ? 0 : 100);
+            }
+        };
 
-    $.fn.smartresize = function (fn) {
-        return fn ? this.bind("smartresize", fn) : this.trigger("smartresize", ["execAsap"]);
-    };
+        $.fn.smartresize = function (fn) {
+            return fn ? this.bind("smartresize", fn) : this.trigger("smartresize", ["execAsap"]);
+        };
+    }
 
     /* The jSlider plugin */
     $.fn.jslider = function (options, callback) {
@@ -222,6 +224,7 @@
 
                     if (settings.fluid) {
                         $(window).on('smartresize', function () {
+                            console.log('Working...');
                             calculateFrameSize();
 
                             // Fix le margins
@@ -235,16 +238,16 @@
                                     dir = 'left';
                                 }
 
-                                if (settings.looping === 'infinite') {
-                                    amount = boundaryWidth*currentSlide + 1;
-                                } else {
-                                    amount = boundaryWidth*currentSlide;
-                                }
+                                // if (settings.looping === 'infinite') {
+                                //     amount = ;
+                                // } else {
+                                //     amount = boundaryWidth*currentSlide;
+                                // }
 
-                                // Append the gutterWidth
-                                amount + settings.gutterWidth;
+                                // // Append the gutterWidth
+                                // amount + settings.gutterWidth;
 
-                                styles['margin-' + dir] = amount;
+                                styles['margin-' + dir] = -(boundaryWidth * currentSlide) - (settings.gutterWidth * (slides));
 
                                 $container.css(styles);
                             }
