@@ -7,8 +7,9 @@
 		* { margin: 0; padding: 0; }
 		#page { width: 960px; margin: 0 auto; }
 		#slider { padding: 50px 0; }
-		#slider .slider-boundary { width: 100%; height: 408px; }
-		.item img { width: 100%; }
+		#slider .slider-boundary { width: 100%; height: 400px; border: 1px solid #CCC; }
+		.item { border: 1px solid #000; height: 100%; background: #EEE; opacity: 0.9; }
+		.item.last { background: #CCC; }
 		.disabled { color: red; }
 	</style>
 </head>
@@ -17,16 +18,16 @@
 	<div id="page">
 		<div id="slider">
 			<div class="item">
-				<img src="img/slide1.png"/>
+				
 			</div>
 			<div class="item">
-				<img src="img/slide2.png"/>
+				
 			</div>
 			<div class="item">
-				<img src="img/slide3.png"/>
+				
 			</div>
 			<div class="item">
-				<img src="img/slide3.png"/>
+				
 			</div>
 		</div>
 	</div>
@@ -38,11 +39,12 @@
 		$(function () {
 			$('#slider').jslider({
 				visible: 3,
+				gutterWidth: 15,
 				transition: 'fade',
 				// direction: 'inverse',
 				// looping: 'infinite',
 				easing: 'easeInOutExpo',
-				auto: true,
+				auto: false,
 				fluid: false
 			});
 		});
