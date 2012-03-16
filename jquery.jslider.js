@@ -1,7 +1,7 @@
 /*
  * jslider - An advanced content slider
  * ====================================
- * @version:    v0.7b
+ * @version:    v0.7
  * @url:        http://github.com/jakebellacera/jslider
  * @author:     (c) Jake Bellacera - http://github.com/jakebellacera
  */
@@ -246,8 +246,6 @@
                                     dir = 'left';
                                 }
 
-                                console.log(slides);
-
                                 if (slides > 1) {
                                     amount = -currentSlide * (boundaryWidth + settings.gutterWidth)
                                 } else {
@@ -410,8 +408,6 @@
 
                 slide = function (toSlide, direction) {
                     // Slide - slides through the frames
-
-                    console.log(currentSlide,toSlide);
 
                     var dir = toSlide < currentSlide ? -1 : 1,
                         distance = dir * ((settings.incrementing ? frameWidth : boundaryWidth) + settings.gutterWidth),
