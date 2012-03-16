@@ -13,12 +13,14 @@ Include jQuery, any optional dependencies and then jslider. Afterwards, paste in
 
 ```javascript
 $('#slideshow').jslider({
-	visible: 1,                     // Amount of slides visible at a time.
+    visible: 1,                     // Amount of slides visible at a time.
+    gutterWidth: 0,                 // Spacing between slides. <= 0 means none.
     transition: 'slide',            // Type of transition [slide/crossfade/fade/cut].
+    incrementing: false,            // Increment per frame instead of per slide.
     direction: 'normal',            // direction of the sliding transition. Will not work if transition != slide.
     looping: true,                  // True: loops back to beginning/end. Infinite: Infinite looping mode.
     speed: 800,                     // Animation speed. If transition == 'cut', this is ignored.
-    easing: 'swing',                // jQuery.easing.
+    easing: 'swing',                // Easing for the animations
     buttons: true,                  // Enable prev/next buttons.
     nextText: 'Next Slide',         // Text for next button. HTML is allowed.
     prevText: 'Previous Slide',     // Text for prev button. HTML is allowed.
@@ -35,12 +37,18 @@ By default, jslider loops your slides. If you'd like an infinite loop effect (th
 
 ## Release Notes
 
+### 0.7
+
+* Frame incrementing
+* Multiple frames at a time, with classes!
+
+
 ### 0.5
 
 Added:
 
 * Infinite looping
-* Responsive layout mode (Using bundled [smartresize](http://github.com/louisremi/jquery-smartresize))
+* Responsive (fluid) layout mode (Using bundled [smartresize](http://github.com/louisremi/jquery-smartresize))
 * Frame-chunking
 * Fade/cut transitions
 * More bugs!
