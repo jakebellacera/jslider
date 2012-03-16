@@ -211,6 +211,7 @@
 
                     // Any additional bindings should be placed here
 
+                    // Responsive sliders
                     if (settings.fluid) {
                         $(window).on('smartresize', function () {
                             calculateFrameSize();
@@ -226,7 +227,13 @@
                                     dir = 'left';
                                 }
 
-                                styles['margin-' + dir] = -(boundaryWidth * currentSlide) - (settings.gutterWidth * (slides));
+                                if (slides > 1) {
+                                    amount = -currentSlide * (boundaryWidth + settings.gutterWidth)
+                                } else {
+                                    amount = 0;
+                                }
+
+                                styles['margin-' + dir] = amount;
 
                                 $container.css(styles);
                             }
