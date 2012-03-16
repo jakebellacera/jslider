@@ -206,7 +206,15 @@
                             }
 
                             return value;
-                        }()), -boundaryWidth - settings.gutterWidth);
+                        }()), function () {
+                            var amount = 0;
+
+                            if (slides > 1) {
+                                amount = -boundaryWidth - settings.gutterWidth
+                            }
+
+                            return amount;
+                        }());
                     }
 
                     // Any additional bindings should be placed here
@@ -226,6 +234,8 @@
                                 } else {
                                     dir = 'left';
                                 }
+
+                                console.log(slides);
 
                                 if (slides > 1) {
                                     amount = -currentSlide * (boundaryWidth + settings.gutterWidth)
