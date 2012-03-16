@@ -30,6 +30,9 @@
 			<div class="item">
 				4
 			</div>
+			<div class="item">
+				5
+			</div>
 		</div>
 	</div>
 
@@ -39,11 +42,12 @@
 	<script>
 		$(function () {
 			$('#slider').jslider({
-				visible: 3,
+				visible: 4,
 				gutterWidth: 10,
 				transition: 'slide',
 				// direction: 'inverse',
-				looping: 'infinite',
+				incrementing: true,
+				looping: false,
 				easing: 'easeInOutExpo',
 				auto: false,
 				fluid: true

@@ -77,6 +77,7 @@
                     visible: 1,                     // Amount of slides visible at a time.
                     gutterWidth: 0,                 // Spacing between slides. <= 0 means none.
                     transition: 'slide',            // Type of transition [slide/crossfade/fade/cut].
+                    incrementing: false,            // Increment per frame instead of per slide.
                     direction: 'normal',            // direction of the sliding transition. Will not work if transition != slide.
                     looping: true,                  // True: loops back to beginning/end. Infinite: Infinite looping mode.
                     speed: 800,                     // Animation speed. If transition == 'cut', this is ignored.
@@ -136,16 +137,26 @@
                                 $frames.slice(0, settings.visible).clone().addClass('cloned')
                             );
                         }
+
                     }
 
                     $frames = $container.children();
 
                     // How many slides will we be transitioning.
-                    if (settings.looping === 'infinite' && settings.transition === 'slide' && $frames.length > settings.visible) {
+                    if (settings.incrementing && settings.transition === 'slide') {
+
+                        // Slides = individual frames
+                        slides = $container.children(':not(.cloned)').length;
+
+                    } else if (!settings.incrementing && settings.looping === 'infinite' && settings.transition === 'slide' && $frames.length > settings.visible) {
+
                         // remove excess padding frames
                         slides = Math.ceil(($frames.length - (settings.visible * 2)) / settings.visible);
+
                     } else {
+
                         slides = Math.ceil($frames.length / settings.visible);
+
                     }
 
                     $frames.addClass('slider-frame');
@@ -400,8 +411,10 @@
                 slide = function (toSlide, direction) {
                     // Slide - slides through the frames
 
+                    console.log(currentSlide,toSlide);
+
                     var dir = toSlide < currentSlide ? -1 : 1,
-                        distance = (boundaryWidth * dir) + (settings.gutterWidth * dir),
+                        distance = dir * ((settings.incrementing ? frameWidth : boundaryWidth) + settings.gutterWidth),
                         marginDir = settings.direction === 'inverse' ? 'right' : 'left',
                         animations = {};
 
@@ -428,6 +441,9 @@
 
                         if (settings.looping === 'infinite') {
                             if (toSlide > slides) {
+                                if (settings.incrementing) {
+                                    distance = distance * settings.visible;
+                                }
                                 // If too far forward, we need to silently shift back to the first slide.
                                 currentSlide = 1;
                                 $container.css('margin-' + marginDir, -distance);
@@ -435,7 +451,7 @@
                             } else if (settings.looping === 'infinite' && toSlide === 0) {
                                 // If too far back, we need to silently shift to the last slide.
                                 currentSlide = slides;
-                                $container.css('margin-' + marginDir, distance * slides);
+                                $container.css('margin-' + marginDir, settings.incrementing ? distance * (slides + (settings.visible - 1)) : distance * slides);
                             }
                         }
 
