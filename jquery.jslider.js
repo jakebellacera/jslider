@@ -70,7 +70,7 @@
                 $pagination,
                 auto,
                 slides,
-                currentSlide = 1,
+                currentSlide = 0,
                 currentOffset,
                 $activeFrames,
                 settings = $.extend({
@@ -91,201 +91,23 @@
                     fluid: false                    // Enable responsive sizing (binds the dimension function to the window.resize).
                 }, options),
 
-                init = function () {
-                    // Sanitize the visible slides setting value, make sure it's >= 1
-                    settings.visible = settings.visible < 1 ? 1 : Math.ceil(settings.visible);
-
-                    // Sanitize gutterWidth, make sure it's >= 0
-                    settings.gutterWidth = settings.gutterWidth < 0 ? 0 : settings.gutterWidth;
-
-                    // Wrapper: contains the entire slider.
-                    $wrapper = $this
-                                    .addClass('slider-wrapper')
-                                    .css('position', 'relative');
-
-                    // Boundary: the visibile viewport.
-                    // This element requires width/height set in CSS.
-                    // Recommended: set overflow: hidden; in CSS as well to prevent "jump"
-                    $boundary = $wrapper.wrapInner('<div/>').children()
-                                    .addClass('slider-boundary')
-                                    .css('overflow', 'hidden')
-                                    .css('position', 'relative');
-
-                    // Container: contains all of the frames
-                    $container = $boundary.wrapInner('<div/>').children()
-                                    .addClass('slider-container')
-                                    .css('overflow', 'hidden');
-
-                    /* Additional formatting to produce the infinite effect. */
-                    if (settings.looping === 'infinite' && settings.transition === 'slide') {
-
-                        $frames = $container.children();
-
-                        if ($frames.length > settings.visible) {
-                            // pad slides with empty elements if required
-                            if ($frames.length % settings.visible !== 0) {
-                                // Find the remaining amount of slides required to finish the last slide.
-                                $container.append(repeat('<div class="empty"/>', settings.visible - ($frames.length % settings.visible)));
-                            }
-
-                            $frames = $container.children();
-
-                            $frames.filter(':first').before(
-                                $frames.slice(-settings.visible).clone().addClass('cloned')
-                            );
-                            $frames.filter(':last').after(
-                                $frames.slice(0, settings.visible).clone().addClass('cloned')
-                            );
-                        }
-
+                selectFrames = function (index, set) {
+                    // Selects slides, can set active if set = true
+                    var range = (settings.incrementing === true && settings.transition === 'slide') ? [index, index + settings.visible] : [index * settings.visible, (index + 1) * settings.visible];
+                    currentSlide = index;
+                    if (set) {
+                        setActiveFrames(range, callback);
                     }
-
-                    $frames = $container.children();
-
-                    // How many slides will we be transitioning.
-                    if (settings.incrementing && settings.transition === 'slide') {
-
-                        // Slides = individual frames
-                        slides = $container.children(':not(.cloned)').length;
-
-                    } else if (!settings.incrementing && settings.looping === 'infinite' && settings.transition === 'slide' && $frames.length > settings.visible) {
-
-                        // remove excess padding frames
-                        slides = Math.ceil(($frames.length - (settings.visible * 2)) / settings.visible);
-
-                    } else {
-
-                        slides = Math.ceil($frames.length / settings.visible);
-
-                    }
-
-                    $frames.addClass('slider-frame');
-
-                    // Some styling for the individual frames
-                    if (settings.transition === 'slide' && settings.direction === 'inverse') {
-                        $container.css({
-                            'position': 'absolute',
-                            'right': 0
-                        });
-                    } else if (settings.transition === 'slide') {
-                        $container.css('position', 'absolute');
-                    } else {
-                        $container.css('position', 'relative');
-                        $frames.slice(currentSlide * settings.visible, settings.visible * slides).css('display', 'none');
-                    }
-
-                    $frames.css('position', 'absolute');
-                    
-                    // Adding "last" class to each last frame in a slide
-                    if (settings.visible > 1) {
-                        $frames.each(function (i, val) { if (i % settings.visible === (settings.visible - 1)) { val.classList.add('last'); } });
-                    }
-
-                    // Append buttons, if enabled
-                    if (settings.buttons && slides > 1) {
-                        $prevButton = $('<a class="slider-button slider-prev"/>')
-                                            .html(settings.prevText)
-                                            .on('click', function (e) {
-                                                if (!$(this).hasClass('disabled')) {
-                                                    gotoSlide(currentSlide - 1);
-                                                }
-                                                e.preventDefault();
-                                            })
-                                            .appendTo($wrapper);
-                        $nextButton = $('<a class="slider-button slider-next"/>')
-                                            .html(settings.nextText)
-                                            .on('click', function (e) {
-                                                if (!$(this).hasClass('disabled')) {
-                                                    gotoSlide(currentSlide + 1);
-                                                }
-                                                e.preventDefault();
-                                            })
-                                            .appendTo($wrapper);
-                    }
-
-                    calculateFrameSize();
-
-                    // Calculate initial offset margins on $container
-                    if (settings.transition === 'slide' && settings.looping === 'infinite') {
-                        $container.css((function() {
-                            var value;
-
-                            if (settings.direction === 'inverse') {
-                                value = 'margin-right';
-                            } else {
-                                value = 'margin-left';
-                            }
-
-                            return value;
-                        }()), function () {
-                            var amount = 0;
-
-                            if (slides > 1) {
-                                amount = -boundaryWidth - settings.gutterWidth
-                            }
-
-                            return amount;
-                        }());
-                    }
-
-                    // Any additional bindings should be placed here
-
-                    // Responsive sliders
-                    if (settings.fluid) {
-                        $(window).on('smartresize', function () {
-                            calculateFrameSize();
-
-                            // Fix le margins
-                            if (settings.transition === 'slide') {
-                                var dir, amount, styles = {};
-
-                                // Right or left?
-                                if (settings.transition === 'slide-inverse') {
-                                    dir = 'right';
-                                } else {
-                                    dir = 'left';
-                                }
-
-                                if (slides > 1) {
-                                    amount = -currentSlide * (boundaryWidth + settings.gutterWidth)
-                                } else {
-                                    amount = 0;
-                                }
-
-                                styles['margin-' + dir] = amount;
-
-                                $container.css(styles);
-                            }
-                        });
-                    }
-
-                    // Determine if we need to perform an offset for selecting frames
-                    currentOffset = settings.transition !== 'slide' || settings.looping !== 'infinite' && settings.transition === 'slide' ? 1 : 0;
-
-                    setActiveSlides();
-
-                    // Start the timer initially if auto
-                    if (settings.auto) {
-                        startTimer(settings.duration);
-                        
-                        if (settings.hoverPause) {
-                            $boundary.hover(function () {
-                                stopTimer();
-                            }, function () {
-                                startTimer();
-                            });
-                        }
-                    }
-
+                    return range;
                 },
 
-                setActiveSlides = function() {
-                    // Handles setting active slides.
-
-                    $activeFrames = $frames.slice((currentSlide - currentOffset) * settings.visible, ((currentSlide - currentOffset) + 1) * settings.visible);
-
-                    $frames.removeClass('active');
+                setActiveFrames = function(range, callback) {
+                    if ($activeFrames) $activeFrames.removeClass('active');
+                    // Handles setting active slides
+                    $activeFrames = $frames.slice(range[0], range[1]);
                     $activeFrames.addClass('active');
+
+                    console.log(range);
                 },
 
                 calculateFrameSize = function () {
@@ -345,20 +167,22 @@
                 },
 
                 gotoSlide = function (toSlide) {
+                    console.log('Going to slide ' + toSlide + ' out of ' + slides);
                     // Handles slide navigation
-
                     var delay;
 
                     if (settings.looping === true || settings.looping && settings.transition !== 'slide') {
-                        if (toSlide > slides) {
-                            gotoSlide(1);
+                        if (toSlide > slides - 1) {
+                            console.log('go back!');
+                            gotoSlide(0);
                             return;
-                        } else if (toSlide <= 0) {
-                            gotoSlide(slides);
+                        } else if (toSlide < 0) {
+                            console.log('go to the end!');
+                            gotoSlide(slides - 1);
                             return;
                         }
                     } else if (!settings.looping) {
-                        if (toSlide > slides || toSlide <= 0) { return; }
+                        if (toSlide > slides - 1 || toSlide < 0) { return; }
                     }
 
                     // Kill the timer
@@ -384,17 +208,16 @@
                             break;
                     }
 
-
                     if (!settings.looping && settings.buttons) {
                         // Sets 'previous' button to disabled if on first frame
-                        if (currentSlide === 1) {
+                        if (currentSlide === 0) {
                             $prevButton.addClass('disabled');
                         } else {
                             $prevButton.removeClass('disabled');
                         }
                             
                         // Sets 'next' button to disabled if on last frame
-                        if (currentSlide === slides) {
+                        if (currentSlide === slides - 1) {
                             $nextButton.addClass('disabled');
                         } else {
                             $nextButton.removeClass('disabled');
@@ -409,97 +232,65 @@
                 slide = function (toSlide, direction) {
                     // Slide - slides through the frames
 
-                    var dir = toSlide < currentSlide ? -1 : 1,
-                        distance = dir * ((settings.incrementing ? frameWidth : boundaryWidth) + settings.gutterWidth),
+                    var toFrame = settings.incrementing ? toSlide : toSlide * settings.visible,
                         marginDir = settings.direction === 'inverse' ? 'right' : 'left',
+                        getOffset = function (index) {
+                            return parseInt($frames.eq(selectFrames(index, true)[0]).css('left'), 10);
+                        },
                         animations = {};
 
-                    if (settings.looping === true && toSlide === 1) {
-                        // If we exceeded the slide count, to back to 0
-                        animations['margin-' + marginDir] = 0;
-                        currentSlide = 1;
-                    } else if (settings.looping === true && toSlide === (slides + 1)) {
-                        // We're going too far back, we need to go to the end
-                        animations['margin-' + marginDir] = distance * slides;
-                        currentSlide = slides;
-                    } else {
-                        // Normal movement
-                        animations['margin-' + marginDir] = '-=' + distance;
-                        currentSlide = toSlide;
-                    }
-                    
-                    $container.filter(':not(:animated)').animate(animations, settings.speed, settings.easing, checkSlide);
-                    
+                    animations['margin-' + marginDir] = -getOffset(toFrame);
+                    $container.filter(':not(:animated)').animate(animations, settings.speed, settings.easing, afterTransition);
 
-                    function checkSlide () {
-                    // With the cloned slides, we can alter margins AFTER an
-                    // animation has been completed to give the infinite looping effect
+                    function afterTransition () {
+                        // With the cloned slides, we can alter margins AFTER an
+                        // animation has been completed to give the infinite looping effect
 
                         if (settings.looping === 'infinite') {
-                            if (toSlide > slides) {
-                                if (settings.incrementing) {
-                                    distance = distance * settings.visible;
-                                }
+                            if (toSlide === slides - settings.visible) {
+                                
                                 // If too far forward, we need to silently shift back to the first slide.
-                                currentSlide = 1;
-                                $container.css('margin-' + marginDir, -distance);
+                                $container.css('margin-' + marginDir, -getOffset(settings.visible));
 
-                            } else if (settings.looping === 'infinite' && toSlide === 0) {
+                            } else if (toSlide === 0) {
+
                                 // If too far back, we need to silently shift to the last slide.
-                                currentSlide = slides;
-                                $container.css('margin-' + marginDir, settings.incrementing ? distance * (slides + (settings.visible - 1)) : distance * slides);
+                                $container.css('margin-' + marginDir, -getOffset(((slides/settings.visible) - 2) * settings.visible));
+
                             }
                         }
 
                         startTimer();
-                        setActiveSlides();
                     }
                 },
 
                 fade = function (toSlide, crossfade) {
                     // Fade - fade out the previous frames, fade in the current ones
+                    // NOTE: Fade is better for transparent slides
 
-                    var actualSlide = settings.visible <= 1 ? toSlide - 1 : (toSlide - 1) * settings.visible,
-                        otherSlide = settings.visible <= 1 ? currentSlide - 1 : (currentSlide - 1) * settings.visible,
-                        offset = function (input) {
-                            return input + settings.visible;
-                        },
-                        $actualSlides = $frames.slice(actualSlide, offset(actualSlide)),
-                        $otherSlides = $frames.slice(otherSlide, offset(otherSlide));
+                    console.log(currentSlide, toSlide);
+
+                    var $prevFrames = $activeFrames,
+                        nextRange = selectFrames(toSlide, true);
 
                     if (crossfade) {
-                        $frames.hide().css('z-index', 1);
-                        $otherSlides.show(0, function() {
-                            $actualSlides.css('z-index', 2).fadeIn(settings.speed, function() {
-                                startTimer();
-                                setActiveSlides();
-                            });
+                        // Crossfade - fade in next frame underneath the active frame
+                        $prevFrames.show(0, function() {
+                            $activeFrames.css('z-index', 2).fadeIn(settings.speed, startTimer);
                         });
                     } else {
-                        $otherSlides.fadeOut(settings.speed);
-                        $actualSlides.fadeIn(settings.speed, function() {
-                            startTimer();
-                            setActiveSlides();
-                        });
+                        $prevFrames.fadeOut(settings.speed);
+                        $activeFrames.fadeIn(settings.speed, startTimer);
                     }
-
-                    currentSlide = toSlide;
                 },
 
                 cut = function (toSlide) {
                     // Cut - hide previous frames, show the current ones
+                    console.log(currentSlide, toSlide);
 
-                    var actualSlide = actualSlide = settings.visible <= 1 ? toSlide - 1 : (toSlide - 1) * settings.visible,
-                        offset = function (input) {
-                            return input + settings.visible;
-                        };
+                    var nextRange = selectFrames(toSlide, true);
 
-                    $frames.hide().removeClass('active').slice(actualSlide, offset(actualSlide)).show(0, function() {
-                        currentSlide = toSlide;
-
-                        startTimer();
-                        setActiveSlides();
-                    });
+                    $frames.hide().slice(nextRange[0], nextRange[1]).show(0, startTimer);
                 },
 
                 /**
@@ -509,6 +300,7 @@
                     // Handles starting the timer
 
                     if (settings.auto && slides > 1) {
+                        console.log('Setting timer');
                         clearTimeout(auto);
                         auto = setTimeout(function () {
                             gotoSlide(currentSlide + 1);
@@ -520,8 +312,141 @@
                     // Stops the timer
 
                     if (settings.auto){
+                        console.log('Stopping timer');
                         clearTimeout(auto);
                     }
+                },
+
+                init = function () {
+                    // Sanitize the visible slides setting value, make sure it's >= 1
+                    settings.visible = settings.visible < 1 ? 1 : Math.ceil(settings.visible);
+
+                    // Sanitize gutterWidth, make sure it's >= 0
+                    settings.gutterWidth = settings.gutterWidth < 0 ? 0 : settings.gutterWidth;
+
+                    // Wrapper: contains the entire slider.
+                    $wrapper = $this.addClass('slider-wrapper').css('position', 'relative');
+
+                    // Boundary: the visibile viewport.
+                    // This element requires width/height set in CSS.
+                    // Recommended: set overflow: hidden; in CSS as well to prevent "jump"
+                    $boundary = $wrapper.wrapInner('<div/>').children()
+                                    .addClass('slider-boundary')
+                                    .css('overflow', 'hidden')
+                                    .css('position', 'relative');
+
+                    // Container: contains all of the frames
+                    $container = $boundary.wrapInner('<div/>').children()
+                                    .addClass('slider-container')
+                                    .css('overflow', 'hidden');
+
+
+                    // Account for frames
+                    $frames = $container.children();
+
+                    if ($frames.length > settings.visible && $frames.length % settings.visible !== 0) {
+                        // Find the remaining amount of slides required to finish the last slide.
+                        $container.append(repeat('<div class="empty"/>', settings.visible - ($frames.length % settings.visible)));
+                    }
+
+                    // Clone first and last slides for the infinite effect
+                    if ($frames.length > settings.visible && settings.looping === 'infinite' && settings.transition === 'slide') {
+                        $frames = $container.children(); // reallocate for any empty frames
+                        $frames.filter(':first').before(
+                            $frames.slice(-settings.visible).clone().addClass('cloned')
+                        );
+                        $frames.filter(':last').after(
+                            $frames.slice(0, settings.visible).clone().addClass('cloned')
+                        );
+
+                        $frames = $container.children(); // reallocate for cloned slides
+                    }
+
+                    // How many slides will we be transitioning.
+                    slides = settings.incrementing && settings.transition === 'slide' ? $frames.length : Math.ceil($frames.length / settings.visible);
+
+                    $frames.addClass('slider-frame');
+
+                    // Some styling for the individual frames
+                    if (settings.transition === 'slide' && settings.direction === 'inverse') {
+                        $container.css({
+                            'position': 'absolute',
+                            'right': 0
+                        });
+                    } else if (settings.transition === 'slide') {
+                        $container.css('position', 'absolute');
+                    } else {
+                        $container.css('position', 'relative');
+                        $frames.css('display', 'none');
+                    }
+
+                    $frames.css('position', 'absolute');
+                    
+                    // Adding "last" class to each last frame in a slide
+                    if (settings.visible > 1) {
+                        $frames.each(function (i, val) { if (i % settings.visible === (settings.visible - 1)) { val.classList.add('last'); } });
+                    }
+
+                    // Append buttons, if enabled
+                    if (settings.buttons && slides > 1) {
+                        $prevButton = $('<a class="slider-button slider-prev"/>')
+                                            .html(settings.prevText)
+                                            .on('click', function (e) {
+                                                if (!$(this).hasClass('disabled')) {
+                                                    gotoSlide(currentSlide - 1);
+                                                }
+                                                e.preventDefault();
+                                            })
+                                            .appendTo($wrapper);
+                        $nextButton = $('<a class="slider-button slider-next"/>')
+                                            .html(settings.nextText)
+                                            .on('click', function (e) {
+                                                if (!$(this).hasClass('disabled')) {
+                                                    gotoSlide(currentSlide + 1);
+                                                }
+                                                e.preventDefault();
+                                            })
+                                            .appendTo($wrapper);
+                    }
+
+                    calculateFrameSize();
+
+                    // Calculate initial offset margins on $container
+                    if (settings.transition === 'slide' && settings.looping === 'infinite') {
+                        $container.css(settings.direction === 'inverse' ? 'margin-right' : 'margin-left', slides > 1 ? -boundaryWidth - settings.gutterWidth : 0);
+                    }
+
+                    // Any additional bindings should be placed here
+
+                    // Responsive sliders
+                    if (settings.fluid) {
+                        $(window).on('smartresize', function () {
+                            calculateFrameSize();
+
+                            // Fix le margins
+                            if (settings.transition === 'slide') {
+                                var dir, amount, styles = {};
+
+                                // Right or left?
+                                if (settings.transition === 'slide-inverse') {
+                                    dir = 'right';
+                                } else {
+                                    dir = 'left';
+                                }
+
+                                if (slides > 1) {
+                                    amount = -currentSlide * (boundaryWidth + settings.gutterWidth)
+                                } else {
+                                    amount = 0;
+                                }
+
+                                styles['margin-' + dir] = amount;
+
+                                $container.css(styles);
+                            }
+                        });
+                    }
+                    gotoSlide(selectFrames(currentSlide, true)[0]);
                 };
 
             init();
