@@ -102,15 +102,14 @@
                 },
 
                 setActiveFrames = function(range, callback) {
-                    if ($activeFrames) $activeFrames.removeClass('active');
                     // Handles setting active slides
+                    if ($activeFrames) $activeFrames.removeClass('active');
                     $activeFrames = $frames.slice(range[0], range[1]);
                     $activeFrames.addClass('active');
                 },
 
                 calculateFrameSize = function () {
                     // Calculates sizes. Needs to be abstracted to DRY up fluid layouts
-
                     var width = $boundary.innerWidth(),
                         height = $boundary.innerHeight(),
                         i = 0,
@@ -226,7 +225,6 @@
 
                 slide = function (toSlide, direction) {
                     // Slide - slides through the frames
-
                     var toFrame = settings.incrementing ? toSlide : toSlide * settings.visible,
                         marginDir = settings.direction === 'inverse' ? 'right' : 'left',
                         getOffset = function (index) {
@@ -262,7 +260,6 @@
                 fade = function (toSlide, crossfade) {
                     // Fade - fade out the previous frames, fade in the current ones
                     // NOTE: Fade is better for transparent slides
-
                     var $prevFrames = $activeFrames,
                         nextRange = selectFrames(toSlide, true);
 
@@ -279,7 +276,6 @@
 
                 cut = function (toSlide) {
                     // Cut - hide previous frames, show the current ones
-
                     var nextRange = selectFrames(toSlide, true);
 
                     $frames.hide().slice(nextRange[0], nextRange[1]).show(0, startTimer);
@@ -289,8 +285,7 @@
                  * Timers
                  */
                 startTimer = function () {
-                    // Handles starting the timer
-
+                    // Starts the timer
                     if (settings.auto && slides > 1) {
                         clearTimeout(auto);
                         auto = setTimeout(function () {
@@ -301,7 +296,6 @@
                 
                 stopTimer = function () {
                     // Stops the timer
-
                     if (settings.auto){
                         clearTimeout(auto);
                     }
@@ -412,9 +406,11 @@
                     if (settings.fluid) {
                         $(window).on('smartresize', function () {
                             calculateFrameSize();
+                            stopTimer();
 
                             // Fix le margins
                             if (settings.transition === 'slide') {
+                                stopTimer();
                                 var dir, amount, styles = {};
 
                                 // Right or left?
@@ -425,7 +421,7 @@
                                 }
 
                                 if (slides > 1) {
-                                    amount = -currentSlide * (boundaryWidth + settings.gutterWidth)
+                                    amount = -((currentSlide > 0 ? currentSlide : 1) * (boundaryWidth + settings.gutterWidth));
                                 } else {
                                     amount = 0;
                                 }
@@ -433,6 +429,7 @@
                                 styles['margin-' + dir] = amount;
 
                                 $container.css(styles);
+                                startTimer();
                             }
                         });
                     }
