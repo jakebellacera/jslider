@@ -106,8 +106,6 @@
                     // Handles setting active slides
                     $activeFrames = $frames.slice(range[0], range[1]);
                     $activeFrames.addClass('active');
-
-                    console.log(range);
                 },
 
                 calculateFrameSize = function () {
@@ -167,17 +165,14 @@
                 },
 
                 gotoSlide = function (toSlide) {
-                    console.log('Going to slide ' + toSlide + ' out of ' + slides);
                     // Handles slide navigation
                     var delay;
 
                     if (settings.looping === true || settings.looping && settings.transition !== 'slide') {
                         if (toSlide > slides - 1) {
-                            console.log('go back!');
                             gotoSlide(0);
                             return;
                         } else if (toSlide < 0) {
-                            console.log('go to the end!');
                             gotoSlide(slides - 1);
                             return;
                         }
@@ -268,8 +263,6 @@
                     // Fade - fade out the previous frames, fade in the current ones
                     // NOTE: Fade is better for transparent slides
 
-                    console.log(currentSlide, toSlide);
-
                     var $prevFrames = $activeFrames,
                         nextRange = selectFrames(toSlide, true);
 
@@ -286,7 +279,6 @@
 
                 cut = function (toSlide) {
                     // Cut - hide previous frames, show the current ones
-                    console.log(currentSlide, toSlide);
 
                     var nextRange = selectFrames(toSlide, true);
 
@@ -300,7 +292,6 @@
                     // Handles starting the timer
 
                     if (settings.auto && slides > 1) {
-                        console.log('Setting timer');
                         clearTimeout(auto);
                         auto = setTimeout(function () {
                             gotoSlide(currentSlide + 1);
@@ -312,7 +303,6 @@
                     // Stops the timer
 
                     if (settings.auto){
-                        console.log('Stopping timer');
                         clearTimeout(auto);
                     }
                 },
