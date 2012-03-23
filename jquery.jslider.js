@@ -93,7 +93,7 @@
 
                 selectFrames = function (index, set) {
                     // Selects slides, can set active if set = true
-                    var range = (settings.incrementing === true && settings.transition === 'slide') ? [index, index + settings.visible] : [index * settings.visible, (index + 1) * settings.visible];
+                    var range = (settings.incrementing && settings.transition === 'slide') ? [index, index + settings.visible] : [index * settings.visible, (index + 1) * settings.visible];
                     currentSlide = index;
                     if (set) {
                         setActiveFrames(range, callback);
@@ -101,7 +101,7 @@
                     return range;
                 },
 
-                setActiveFrames = function(range, callback) {
+                setActiveFrames = function(range) {
                     // Handles setting active slides
                     if ($activeFrames) $activeFrames.removeClass('active');
                     $activeFrames = $frames.slice(range[0], range[1]);
@@ -225,10 +225,10 @@
 
                 slide = function (toSlide, direction) {
                     // Slide - slides through the frames
-                    var toFrame = settings.incrementing ? toSlide : toSlide * settings.visible,
+                    var toFrame = toSlide,
                         marginDir = settings.direction === 'inverse' ? 'right' : 'left',
                         getOffset = function (index) {
-                            return parseInt($frames.eq(selectFrames(index, true)[0]).css('left'), 10);
+                            return parseInt($frames.eq(selectFrames(index, true)[0]).css(marginDir), 10);
                         },
                         animations = {};
 
@@ -240,15 +240,15 @@
                         // animation has been completed to give the infinite looping effect
 
                         if (settings.looping === 'infinite') {
-                            if (toSlide === slides - settings.visible) {
+                            if (toSlide === slides - (settings.incrementing ? (settings.visible - 1) : 1)) {
                                 
                                 // If too far forward, we need to silently shift back to the first slide.
-                                $container.css('margin-' + marginDir, -getOffset(settings.visible));
+                                $container.css('margin-' + marginDir, -getOffset(settings.incrementing ? settings.visible : 1));
 
                             } else if (toSlide === 0) {
 
                                 // If too far back, we need to silently shift to the last slide.
-                                $container.css('margin-' + marginDir, -getOffset(((slides/settings.visible) - 2) * settings.visible));
+                                $container.css('margin-' + marginDir, -getOffset(settings.incrementing ? ((slides + 1) - (settings.visible * 2)) : (slides - 2)));
 
                             }
                         }
@@ -269,7 +269,7 @@
                             $activeFrames.css('z-index', 2).fadeIn(settings.speed, startTimer);
                         });
                     } else {
-                        $prevFrames.fadeOut(settings.speed);
+                        if ($prevFrames) $prevFrames.fadeOut(settings.speed);
                         $activeFrames.fadeIn(settings.speed, startTimer);
                     }
                 },
@@ -304,6 +304,9 @@
                 init = function () {
                     // Sanitize the visible slides setting value, make sure it's >= 1
                     settings.visible = settings.visible < 1 ? 1 : Math.ceil(settings.visible);
+
+                    // Current Slide
+                    currentSlide = settings.transition === 'slide' && settings.looping === 'infinite' ? (settings.incrementing ? settings.visible : 1) : 0;
 
                     // Sanitize gutterWidth, make sure it's >= 0
                     settings.gutterWidth = settings.gutterWidth < 0 ? 0 : settings.gutterWidth;
@@ -347,7 +350,7 @@
                     }
 
                     // How many slides will we be transitioning.
-                    slides = settings.incrementing && settings.transition === 'slide' ? $frames.length : Math.ceil($frames.length / settings.visible);
+                    slides = settings.transition === 'slide' && settings.incrementing ? $frames.length - 1 : Math.ceil($frames.length / settings.visible);
 
                     $frames.addClass('slider-frame');
 
@@ -433,7 +436,7 @@
                             }
                         });
                     }
-                    gotoSlide(selectFrames(currentSlide, true)[0]);
+                    gotoSlide(currentSlide);
                 };
 
             init();
