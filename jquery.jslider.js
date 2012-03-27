@@ -371,7 +371,7 @@
                     
                     // Adding "last" class to each last frame in a slide
                     if (settings.visible > 1) {
-                        $frames.each(function (i, val) { if (i % settings.visible === (settings.visible - 1)) { val.classList.add('last'); } });
+                        $frames.each(function (i, ele) { if (i % settings.visible === (settings.visible - 1)) { $(ele).addClass('last'); } });
                     }
 
                     // Append buttons, if enabled
@@ -440,6 +440,8 @@
                 };
 
             init();
+
+            if (typeof callback == "function") callback(); else return;
         });
     };
 }(window, jQuery));
