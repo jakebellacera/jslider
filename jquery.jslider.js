@@ -436,7 +436,16 @@
                             }
                         });
                     }
+                    
                     gotoSlide(currentSlide);
+
+                    if(settings.auto && settings.hoverPause) {
+                        $wrapper.hover(function() {
+                            stopTimer();
+                        }, function() {
+                            startTimer();
+                        });
+                    }
                 };
 
             init();
