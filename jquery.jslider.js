@@ -3,19 +3,15 @@
  * ====================================
  * @version:    v0.7
  * @url:        http://github.com/jakebellacera/jslider
- * @author:     (c) Jake Bellacera - http://github.com/jakebellacera
+ * @author:     Jake Bellacera - http://github.com/jakebellacera
  */
 
 
 (function (window, $) {
-
     'use strict';
 
-    /*
-        SmartResize plugin for debulking resizes.
-        TODO: Add a check to see if smartresize was already added, or namespace it.
-        @url: https://github.com/louisremi/jquery-smartresize
-    */
+    // === SmartResize =========================================================
+    // @url: https://github.com/louisremi/jquery-smartresize
     if (!window.jQuery.fn.smartresize) {
         var $event = $.event,
             resizeTimeout;
@@ -45,7 +41,7 @@
         };
     }
 
-    /* The jSlider plugin */
+    // === jSlider =============================================================
     $.fn.jslider = function (options, callback) {
 
         function repeat(str, n) {
