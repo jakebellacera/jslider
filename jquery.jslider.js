@@ -175,6 +175,8 @@
                         if (toSlide > slides - 1 || toSlide < 0) { return; }
                     }
 
+                    // Stop any running animations
+                    $container.stop(true,true);
                     // Kill the timer
                     stopTimer();
 
@@ -446,7 +448,11 @@
 
             init();
 
-            if (typeof callback == "function") callback(); else return;
+            if (typeof callback == 'function') { // make sure the callback is a function
+                callback.call(this); // brings the scope to the callback
+            }
+            
+            return this;
         });
     };
 }(window, jQuery));
